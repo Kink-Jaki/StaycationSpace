@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db";
-import { users } from "../db/schema/user";
+import { users } from "../db/schema/users";
 import { generateToken } from "../utils/jwt";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
