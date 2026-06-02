@@ -9,13 +9,16 @@ import { mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 
+import { adminOnly } from "../middleware/role";
+import { authMiddleware } from "../middleware/auth";
+
 const app = new Hono();
 
 
 // =========================
 // CREATE SPACE
 // =========================
-app.post("/", async (c) => {
+app.post("/",authMiddleware,adminOnly, async (c) => {
   const body = await c.req.json();
 
   const result = await db.insert(spaces).values({
@@ -58,7 +61,7 @@ app.get("/:id", async (c) => {
 // =========================
 // UPDATE SPACE
 // =========================
-app.put("/:id", async (c) => {
+app.put("/:id",authMiddleware,adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json();
 
@@ -82,7 +85,7 @@ app.put("/:id", async (c) => {
 // =========================
 // DELETE SPACE
 // =========================
-app.delete("/:id", async (c) => {
+app.delete("/:id",authMiddleware,adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
   await db.delete(spaces).where(eq(spaces.id, id));
@@ -94,7 +97,7 @@ app.delete("/:id", async (c) => {
 // =========================
 // UPDATE PRICE ONLY
 // =========================
-app.patch("/:id/price", async (c) => {
+app.patch("/:id/price",authMiddleware,adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json();
 
@@ -114,7 +117,7 @@ app.patch("/:id/price", async (c) => {
 // =========================
 // UPLOAD IMAGE (LOCAL STORAGE)
 // =========================
-app.post("/:id/images", async (c) => {
+app.post("/:id/images",authMiddleware,adminOnly, async (c) => {
   const spaceId = Number(c.req.param("id"));
 
   const form = await c.req.formData();

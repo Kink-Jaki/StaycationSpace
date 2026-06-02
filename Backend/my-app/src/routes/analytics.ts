@@ -6,8 +6,11 @@ import { bookings } from "../db/schema/bookings";
 import { payments } from "../db/schema/payments";
 import { reviews } from "../db/schema/reviews";
 import { sql, desc } from "drizzle-orm";
+import { adminOnly } from "../middleware/role";
+import { authMiddleware } from "../middleware/auth";
 
 const analytics = new Hono();
+analytics.use("*", authMiddleware, adminOnly);
 
 /* =========================
    OVERVIEW DASHBOARD

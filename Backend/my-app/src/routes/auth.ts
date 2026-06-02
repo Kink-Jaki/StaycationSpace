@@ -64,10 +64,11 @@ auth.post("/login", async (c) => {
   }
 
   const token = await generateToken({
-    sub: String(user.id),
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60,
-  });
+  id: user.id,
+  email: user.email,
+  role: user.role,
+  exp: Math.floor(Date.now() / 1000) + 60 * 60,
+});
 
   return c.json({
     token,

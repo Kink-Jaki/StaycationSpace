@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { bookings }  from "./bookings";
 import { spaces }    from "./spaces";
-import { customers } from "./customers";
+import { users } from "./users";
 
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
@@ -21,9 +21,9 @@ export const reviews = pgTable("reviews", {
     .notNull()
     .references(() => spaces.id),
 
-  customerId: integer("customer_id")
+  userId: integer("user_id")
     .notNull()
-    .references(() => customers.id),
+    .references(() => users.id),
 
   rating: integer("rating")
     .notNull(),

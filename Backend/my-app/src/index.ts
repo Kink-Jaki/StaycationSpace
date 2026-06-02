@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import {jwt} from 'hono/jwt'
-import admin from './routes/admin'
 import { cors } from "hono/cors";
 import auth from './routes/auth'
 import analytics from './routes/analytics'
@@ -10,6 +9,9 @@ import { promises as fs } from 'fs'
 import { join } from 'path'
 import bookings from "./routes/bookings";
 import payments from "./routes/payments";
+import reviews from "./routes/reviews";
+import promos from "./routes/promos";
+import profile from "./routes/profile";
 
 
 const app = new Hono()
@@ -27,11 +29,15 @@ app.use(
 app.get("/", (c) => {
   return c.json({ message: "API BISAAA" });
 })
-app.route('/admin', admin) 
 app.route('/auth', auth)
 app.route('/spaces', spaces)
 app.route('/bookings', bookings)
 app.route('/payments', payments)
+app.route('/reviews', reviews)
+app.route('/promos', promos)
+app.route("/analytics", analytics)
+app.route("/profile", profile)
+
 app.use("/uploads/*", serveStatic({
   root: "./",
   getContent: async (path) => {
@@ -47,8 +53,6 @@ app.use("/profile", jwt({
   secret: "my-super-secret-key",
   alg : "HS256",
 }))
-
-app.route("/analytics", analytics);
 
 app.get('/profile', (c) => {
   const payload = c.get("jwtPayload")

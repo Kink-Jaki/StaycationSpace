@@ -8,7 +8,7 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { spaces }    from "./spaces";
-import { customers } from "./customers";
+import { users } from "./users";
 import { promos }    from "./promos";
 
 export const bookingStatusEnum = pgEnum("booking_status", [
@@ -25,9 +25,9 @@ export const bookings = pgTable("bookings", {
     .notNull()
     .references(() => spaces.id),
 
-  customerId: integer("customer_id")
+  userId: integer("user_id")
     .notNull()
-    .references(() => customers.id),
+    .references(() => users.id),
 
   promoId: integer("promo_id")
     .references(() => promos.id),

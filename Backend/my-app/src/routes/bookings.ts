@@ -1,12 +1,15 @@
 import { Hono } from "hono";
 import { db } from "../db";
-
 import { bookings } from "../db/schema/bookings";
 import { spaces } from "../db/schema/spaces";
-
+import { promos } from "../db/schema/promos";
 import { eq, and, lt, gt, sql } from "drizzle-orm";
+import { authMiddleware } from "../middleware/auth";
+import { adminOnly } from "../middleware/role";
+
 
 const app = new Hono();
+app.use(authMiddleware);
 
 
 // =========================
@@ -17,7 +20,7 @@ app.post("/", async (c) => {
 
   const {
     spaceId,
-    customerId,
+    userId,
     promoId,
     startTime,
     endTime,
@@ -41,10 +44,8 @@ app.post("/", async (c) => {
     where: (b, { and, eq, lt, gt }) =>
       and(
         eq(b.spaceId, spaceId),
-
         lt(b.startTime, new Date(endTime)),
         gt(b.endTime, new Date(startTime)),
-
         sql`${b.status} != 'cancelled'`
       ),
   });
@@ -58,34 +59,141 @@ app.post("/", async (c) => {
     );
   }
 
-  // hitung durasi jam
   const start = new Date(startTime);
   const end = new Date(endTime);
 
-  const durationMs = end.getTime() - start.getTime();
+  // validasi waktu
+  if (end <= start) {
+    return c.json(
+      {
+        message: "End time harus lebih besar dari start time",
+      },
+      400
+    );
+  }
 
-  const durationHours = durationMs / (1000 * 60 * 60);
+  // hitung durasi
+  const durationMs =
+    end.getTime() - start.getTime();
 
-  // hitung total harga
-  const totalPrice =
-    Number(space.pricePerHour) * durationHours;
+  const durationHours =
+    durationMs / (1000 * 60 * 60);
 
-  // create booking
+  let totalPrice =
+    Number(space.pricePerHour) *
+    durationHours;
+
+  let promoData = null;
+
+  // =========================
+  // APPLY PROMO
+  // =========================
+  if (promoId) {
+    promoData = await db.query.promos.findFirst({
+      where: (p, { eq }) =>
+        eq(p.id, promoId),
+    });
+
+    if (!promoData) {
+      return c.json(
+        {
+          message: "Promo tidak ditemukan",
+        },
+        404
+      );
+    }
+
+    if (!promoData.isActive) {
+      return c.json(
+        {
+          message: "Promo tidak aktif",
+        },
+        400
+      );
+    }
+
+    if (
+      promoData.usedCount >=
+      promoData.maxUsage
+    ) {
+      return c.json(
+        {
+          message: "Promo sudah habis",
+        },
+        400
+      );
+    }
+
+    if (
+      promoData.expiresAt &&
+      new Date(promoData.expiresAt) <
+        new Date()
+    ) {
+      return c.json(
+        {
+          message: "Promo sudah kadaluarsa",
+        },
+        400
+      );
+    }
+
+    // percent
+    if (promoData.type === "percent") {
+      totalPrice =
+        totalPrice -
+        (totalPrice *
+          Number(promoData.value)) /
+          100;
+    }
+
+    // fixed
+    if (promoData.type === "fixed") {
+      totalPrice =
+        totalPrice -
+        Number(promoData.value);
+    }
+
+    if (totalPrice < 0) {
+      totalPrice = 0;
+    }
+  }
+
+  // =========================
+  // CREATE BOOKING
+  // =========================
   const booking = await db
     .insert(bookings)
     .values({
       spaceId,
-      customerId,
+      userId,
       promoId,
       startTime: start,
       endTime: end,
-      totalPrice: String(totalPrice),
+      totalPrice: totalPrice.toString(),
       notes,
       status: "pending",
     })
     .returning();
 
-  return c.json(booking[0]);
+  // =========================
+  // UPDATE PROMO USAGE
+  // =========================
+  if (promoData) {
+    await db
+      .update(promos)
+      .set({
+        usedCount:
+          promoData.usedCount + 1,
+      })
+      .where(eq(promos.id, promoData.id));
+  }
+
+  return c.json({
+    booking: booking[0],
+    promoApplied:
+      promoData?.code ?? null,
+    finalPrice: totalPrice,
+  });
 });
 
 

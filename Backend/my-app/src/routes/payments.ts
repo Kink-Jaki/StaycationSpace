@@ -1,13 +1,12 @@
 import { Hono } from "hono";
 import { db } from "../db";
-
 import { payments } from "../db/schema/payments";
 import { bookings } from "../db/schema/bookings";
-
 import { eq } from "drizzle-orm";
+import { mkdir, writeFile } from "fs/promises";
 
-import { mkdir } from "fs/promises";
-import { writeFile } from "fs/promises";
+import { authMiddleware } from "../middleware/auth";
+import { adminOnly } from "../middleware/role";
 
 const app = new Hono();
 
@@ -15,16 +14,11 @@ const app = new Hono();
 // =========================
 // CREATE PAYMENT
 // =========================
-app.post("/", async (c) => {
+app.post("/",authMiddleware, async (c) => {
   const body = await c.req.json();
 
-  const {
-    bookingId,
-    amount,
-    method,
-  } = body;
+  const { bookingId, amount, method } = body;
 
-  // cek booking
   const booking = await db.query.bookings.findFirst({
     where: (b, { eq }) => eq(b.id, bookingId),
   });
@@ -53,11 +47,10 @@ app.post("/", async (c) => {
 // =========================
 // UPLOAD PAYMENT PROOF
 // =========================
-app.post("/:id/upload", async (c) => {
+app.post("/:id/upload",authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
 
   const body = await c.req.parseBody();
-
   const file = body["file"];
 
   if (!(file instanceof File)) {
@@ -67,29 +60,21 @@ app.post("/:id/upload", async (c) => {
     );
   }
 
-  // buat folder uploads/payments
   await mkdir("./public/uploads/payments", {
     recursive: true,
   });
 
-  // generate nama file
-  const fileName =
-    `${Date.now()}-${file.name}`;
+  const fileName = `${Date.now()}-${file.name}`;
 
-  const path =
-    `./public/uploads/payments/${fileName}`;
+  const path = `./public/uploads/payments/${fileName}`;
 
-  // convert file
   const buffer = await file.arrayBuffer();
 
-  // save file
   await writeFile(path, Buffer.from(buffer));
 
-  // url image
   const imageUrl =
     `${process.env.BASE_URL}/uploads/payments/${fileName}`;
 
-  // update payment
   const updated = await db
     .update(payments)
     .set({
@@ -106,7 +91,7 @@ app.post("/:id/upload", async (c) => {
 // =========================
 // GET ALL PAYMENTS
 // =========================
-app.get("/", async (c) => {
+app.get("/",authMiddleware, async (c) => {
   const data = await db
     .select()
     .from(payments);
@@ -118,7 +103,7 @@ app.get("/", async (c) => {
 // =========================
 // GET PAYMENT BY ID
 // =========================
-app.get("/:id", async (c) => {
+app.get("/:id",authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
 
   const data = await db
@@ -138,16 +123,46 @@ app.get("/:id", async (c) => {
 
 
 // =========================
-// VERIFY PAYMENT
+// GET PAYMENT BY STATUS
 // =========================
-app.patch("/:id/verify", async (c) => {
+app.get("/status/:status",authMiddleware, async (c) => {
+  const status = c.req.param("status");
+
+  const data = await db
+    .select()
+    .from(payments)
+    .where(eq(payments.status, status as any));
+
+  return c.json(data);
+});
+
+
+// =========================
+// UPDATE PAYMENT STATUS
+// =========================
+app.patch("/:id/status",authMiddleware,adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
-  // update payment
+  const { status } = await c.req.json();
+
+  const allowed = [
+    "pending",
+    "uploaded",
+    "verified",
+    "rejected",
+  ];
+
+  if (!allowed.includes(status)) {
+    return c.json(
+      { message: "Status tidak valid" },
+      400
+    );
+  }
+
   const payment = await db
     .update(payments)
     .set({
-      status: "verified",
+      status,
     })
     .where(eq(payments.id, id))
     .returning();
@@ -159,16 +174,30 @@ app.patch("/:id/verify", async (c) => {
     );
   }
 
-  // update booking
-  await db
-    .update(bookings)
-    .set({
-      status: "verified",
-    })
-    .where(eq(bookings.id, payment[0].bookingId));
+  if (status === "verified") {
+    await db
+      .update(bookings)
+      .set({
+        status: "verified",
+      })
+      .where(
+        eq(bookings.id, payment[0].bookingId)
+      );
+  }
+
+  if (status === "rejected") {
+    await db
+      .update(bookings)
+      .set({
+        status: "cancelled",
+      })
+      .where(
+        eq(bookings.id, payment[0].bookingId)
+      );
+  }
 
   return c.json({
-    message: "Payment verified",
+    message: "Status payment berhasil diubah",
     payment: payment[0],
   });
 });
@@ -177,7 +206,7 @@ app.patch("/:id/verify", async (c) => {
 // =========================
 // DELETE PAYMENT
 // =========================
-app.delete("/:id", async (c) => {
+app.delete("/:id",authMiddleware,adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
   await db

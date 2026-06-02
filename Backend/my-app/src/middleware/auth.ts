@@ -15,7 +15,11 @@ export const authMiddleware = async (c: Context, next: Next) => {
   }
 
   try {
-    const payload = await verify(token, process.env.JWT_SECRET!, "HS256");
+    const payload = await verify(
+      token,
+      process.env.JWT_SECRET!,
+      "HS256"
+    ) as { id: number; email: string; role: string };
 
     // simpan payload JWT ke context
     c.set("user", payload);

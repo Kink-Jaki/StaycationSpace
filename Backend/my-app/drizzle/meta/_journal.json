@@ -50,6 +50,20 @@
       "when": 1780364894552,
       "tag": "0006_harsh_slyde",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780373518673,
+      "tag": "0007_dusty_trauma",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780374061760,
+      "tag": "0008_naive_daredevil",
+      "breakpoints": true
     }
   ]
 }
