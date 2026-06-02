@@ -134,7 +134,7 @@ app.post("/:id/images", async (c) => {
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(filePath, buffer);
 
-  const imageUrl = `http://localhost:3000/uploads/${fileName}`;
+  const imageUrl = `http://192.168.111.152:3000/uploads/${fileName}`;
 
   const image = await db.insert(spaceImages).values({
     spaceId,

@@ -43,6 +43,13 @@
       "when": 1780133435890,
       "tag": "0005_hesitant_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780364894552,
+      "tag": "0006_harsh_slyde",
+      "breakpoints": true
     }
   ]
 }

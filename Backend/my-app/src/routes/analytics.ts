@@ -56,4 +56,39 @@ analytics.get("/overview", async (c) => {
   });
 });
 
+analytics.get("/chart", async (c) => {
+
+  const revenueChart = await db.execute(sql`
+    SELECT
+      TO_CHAR(created_at, 'Mon') as month,
+      COALESCE(SUM(amount), 0) as revenue
+    FROM payments
+    GROUP BY month
+    ORDER BY MIN(created_at)
+  `);
+
+  const bookingChart = await db.execute(sql`
+    SELECT
+      TO_CHAR(created_at, 'Mon') as month,
+      COUNT(*) as bookings
+    FROM bookings
+    GROUP BY month
+    ORDER BY MIN(created_at)
+  `);
+
+  const bookingStatus = await db.execute(sql`
+    SELECT
+      status,
+      COUNT(*) as total
+    FROM bookings
+    GROUP BY status
+  `);
+
+  return c.json({
+    revenueChart,
+    bookingChart,
+    bookingStatus,
+  });
+});
+
 export default analytics;

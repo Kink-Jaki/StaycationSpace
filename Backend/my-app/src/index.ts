@@ -8,6 +8,7 @@ import spaces from './routes/spaces'
 import { serveStatic } from 'hono/serve-static'
 import { promises as fs } from 'fs'
 import { join } from 'path'
+import bookings from "./routes/bookings";
 
 
 const app = new Hono()
@@ -28,6 +29,7 @@ app.get("/", (c) => {
 app.route('/admin', admin) 
 app.route('/auth', auth)
 app.route('/spaces', spaces)
+app.route('/bookings', bookings)
 app.use("/uploads/*", serveStatic({
   root: "./",
   getContent: async (path) => {

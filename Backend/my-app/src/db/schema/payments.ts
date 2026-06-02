@@ -44,4 +44,7 @@ export const payments = pgTable("payments", {
 
   paidAt: timestamp("paid_at")
     .defaultNow(),
+
+    createdAt: timestamp("created_at")
+  .defaultNow(),
 });
