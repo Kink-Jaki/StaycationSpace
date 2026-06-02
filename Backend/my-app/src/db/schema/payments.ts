@@ -20,6 +20,7 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "pending",
   "verified",
   "rejected",
+  "uploaded",
 ]);
 
 export const payments = pgTable("payments", {
