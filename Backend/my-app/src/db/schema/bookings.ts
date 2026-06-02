@@ -13,9 +13,9 @@ import { promos }    from "./promos";
 
 export const bookingStatusEnum = pgEnum("booking_status", [
   "pending",
-  "confirmed",
+  "paid",
   "cancelled",
-  "done",
+  "verified",
 ]);
 
 export const bookings = pgTable("bookings", {
@@ -49,4 +49,7 @@ export const bookings = pgTable("bookings", {
 
   createdAt: timestamp("created_at")
     .defaultNow(),
+
+    updatedAt: timestamp("updated_at")
+  .defaultNow(),
 });
