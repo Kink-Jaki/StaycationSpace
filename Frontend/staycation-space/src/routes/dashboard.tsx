@@ -1,24 +1,23 @@
 
-import { createFileRoute } from '@tanstack/react-router'
-import React, { useState, useEffect } from 'react';
+import { createFileRoute } from "@tanstack/react-router";
+import React, { useEffect, useState } from "react";
 
 import {
   LayoutDashboard,
   Building2,
-  BarChart3,
   Calendar,
   CreditCard,
   Users,
   LogOut,
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  X,
   Settings,
   Star,
   Percent,
   Menu,
-} from 'lucide-react';
+  BarChart3,
+  CheckCircle2,
+  Clock3,
+  DollarSign,
+} from "lucide-react";
 
 // ========================================
 // CONFIG
@@ -35,22 +34,20 @@ interface Stats {
   estimasiOmset: number;
 }
 
-interface ChartData {
-  bulan: string;
-  nilai: number;
-}
-
 interface Review {
   id: number;
-  nama: string;
   rating: number;
-  komentar: string;
+  comment: string;
 }
 
-interface MenuItem {
-  name: string;
-  icon: React.ComponentType<any>;
-  path: string;
+interface RevenueChart {
+  month: string;
+  revenue: string;
+}
+
+interface BookingChart {
+  month: string;
+  bookings: string;
 }
 
 interface SidebarProps {
@@ -62,7 +59,18 @@ interface SidebarProps {
 }
 
 // ========================================
-// AUTH HELPER
+// FORMAT
+// ========================================
+const formatRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+// ========================================
+// AUTH
 // ========================================
 const getToken = () => {
   return localStorage.getItem("token");
@@ -83,13 +91,12 @@ const logout = () => {
 };
 
 // ========================================
-// API FETCH
+// API
 // ========================================
 const apiFetch = async (
   endpoint: string,
   options: RequestInit = {}
 ) => {
-
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -114,146 +121,102 @@ const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   isSidebarOpen,
   setIsSidebarOpen,
-  setShowLogoutModal
+  setShowLogoutModal,
 }) => {
+  const username = localStorage.getItem("username") || "Admin";
 
-  const username = localStorage.getItem("username") || "User";
-  const role = localStorage.getItem("role") || "user";
-
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  const menuItems: MenuItem[] = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { name: 'Space', icon: Building2, path: '/space_admin' },
-    { name: 'Booking', icon: Calendar, path: '/booking_admin' },
-    { name: 'Customer', icon: Users, path: '/customer' },
-    { name: 'Payment', icon: CreditCard, path: '/payment' },
-    { name: 'Review', icon: Star, path: '/review' },
-    { name: 'Promo', icon: Percent, path: '/promo' },
-    { name: 'Report', icon: BarChart3, path: '/report' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+  const menuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { name: "Space", icon: Building2, path: "/space_admin" },
+    { name: "Booking", icon: Calendar, path: "/booking_admin" },
+    { name: "Customer", icon: Users, path: "/customer" },
+    { name: "Payment", icon: CreditCard, path: "/payment" },
+    { name: "Review", icon: Star, path: "/review" },
+    { name: "Promo", icon: Percent, path: "/promo" },
+    { name: "Report", icon: BarChart3, path: "/report" },
+    { name: "Settings", icon: Settings, path: "/settings" },
   ];
-
-  const handleNavigation = (item: MenuItem) => {
-
-    if (item.name === "Dashboard") {
-      setActiveTab("Dashboard");
-      setIsSidebarOpen(false);
-    } else {
-      window.location.href = item.path;
-    }
-  };
 
   return (
     <aside
       className={`
-      fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300
-      md:relative md:translate-x-0 shrink-0 border-r border-zinc-900
-      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      fixed inset-y-0 left-0 z-40 w-64 bg-[#121212] text-zinc-300 p-5 flex flex-col justify-between transition-transform duration-300
+      md:relative md:translate-x-0 border-r border-zinc-900
+      ${
+        isSidebarOpen
+          ? "translate-x-0"
+          : "-translate-x-full md:translate-x-0"
+      }
     `}
     >
-      <div className="flex flex-col h-full justify-between">
-
-        <div>
-
-          {/* LOGO */}
-          <div className="flex items-center gap-2.5 mb-6">
-
-            <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0">
-              <Building2 size={20} />
-            </div>
-
-            <div className="min-w-0">
-              <h5 className="font-black tracking-wide text-sm text-white truncate">
-                STAYCATION
-                <span className="text-amber-500">SPACE</span>
-              </h5>
-
-              <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">
-                CONSOLES ADMIN
-              </p>
-            </div>
-
+      <div>
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2 bg-amber-500 rounded-lg text-black">
+            <Building2 size={20} />
           </div>
 
-          {/* MENU */}
-          <nav className="space-y-1">
+          <div>
+            <h1 className="font-black text-white text-sm">
+              STAYCATION
+              <span className="text-amber-500">SPACE</span>
+            </h1>
 
-            {menuItems.map((item) => {
-
-              const Icon = item.icon;
-
-              const isActive = activeTab === item.name;
-
-              return (
-                <button
-                  key={item.name}
-                  onClick={() => handleNavigation(item)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-amber-500 text-black'
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{item.name}</span>
-                </button>
-              );
-            })}
-
-          </nav>
-
+            <p className="text-[10px] text-zinc-500">
+              CONSOLES ADMIN
+            </p>
+          </div>
         </div>
 
-        {/* PROFILE */}
-        <div className="pt-4 border-t border-zinc-800/50 mt-auto relative">
+        <nav className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
 
-          {showProfileMenu && (
-            <div className="absolute bottom-16 left-0 w-full bg-[#1e1e1e] border border-zinc-800/80 rounded-xl p-1.5 shadow-xl z-50">
+            const isActive = activeTab === item.name;
 
+            return (
               <button
+                key={item.name}
                 onClick={() => {
-                  setShowProfileMenu(false);
-                  setShowLogoutModal(true);
+                  if (item.name === "Dashboard") {
+                    setActiveTab("Dashboard");
+                    setIsSidebarOpen(false);
+                  } else {
+                    window.location.href = item.path;
+                  }
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/40 transition-colors text-sm font-medium"
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all ${
+                  isActive
+                    ? "bg-amber-500 text-black"
+                    : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                }`}
               >
-                <LogOut size={16} />
-                <span>Logout</span>
+                <Icon size={18} />
+                {item.name}
               </button>
+            );
+          })}
+        </nav>
+      </div>
 
-            </div>
-          )}
+      <div className="border-t border-zinc-800 pt-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm text-white font-semibold">
+              {username}
+            </h3>
+
+            <p className="text-[10px] text-amber-500 uppercase">
+              ADMIN
+            </p>
+          </div>
 
           <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-full flex items-center justify-between p-2.5 bg-zinc-900/60 hover:bg-zinc-800/40 rounded-xl border border-zinc-800/30 text-left"
+            onClick={() => setShowLogoutModal(true)}
+            className="p-2 hover:bg-zinc-800 rounded-lg"
           >
-
-            <div className="flex items-center gap-3 min-w-0">
-
-              <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-bold text-black overflow-hidden text-xs shrink-0">
-                {username.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="min-w-0">
-
-                <h4 className="text-xs font-bold text-white truncate">
-                  {username}
-                </h4>
-
-                <p className="text-[9px] text-amber-500 font-extrabold tracking-wider uppercase">
-                  {role.toUpperCase()}
-                </p>
-
-              </div>
-
-            </div>
-
+            <LogOut size={16} />
           </button>
-
         </div>
-
       </div>
     </aside>
   );
@@ -262,7 +225,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 // ========================================
 // ROUTE
 // ========================================
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute("/dashboard")({
   component: Home,
 });
 
@@ -270,149 +233,86 @@ export const Route = createFileRoute('/dashboard')({
 // MAIN
 // ========================================
 export function Home() {
+  const [activeTab, setActiveTab] =
+    useState<string>("Dashboard");
 
-  const [activeTab, setActiveTab] = useState<string>('Dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] =
+    useState<boolean>(false);
 
-  const [showToast, setShowToast] = useState<boolean>(true);
+  const [showLogoutModal, setShowLogoutModal] =
+    useState<boolean>(false);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-
-  const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
-
-  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
+  const [isBackendOnline, setIsBackendOnline] =
+    useState<boolean | null>(null);
 
   const [stats, setStats] = useState<Stats>({
     totalTempat: 0,
     bookingTerverifikasi: 0,
     menungguPembayaran: 0,
-    estimasiOmset: 0
+    estimasiOmset: 0,
   });
-
-  const [chartData, setChartData] = useState<ChartData[]>([]);
 
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  const [newReviewText, setNewReviewText] = useState<string>('');
+  const [revenueChart, setRevenueChart] =
+    useState<RevenueChart[]>([]);
 
-  const [newReviewRating, setNewReviewRating] = useState<number>(5);
+  const [bookingChart, setBookingChart] =
+    useState<BookingChart[]>([]);
 
   // ========================================
-  // CHECK BACKEND
+  // FETCH OVERVIEW
   // ========================================
-  const checkBackendStatus = async (): Promise<boolean> => {
-
+  const fetchOverview = async () => {
     try {
+      const response = await apiFetch(
+        "/analytics/overview"
+      );
 
-      const controller = new AbortController();
+      const data = await response.json();
 
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 3000);
+      setStats({
+        totalTempat: Number(data.totalSpaces || 0),
 
-      await apiFetch("/analytics/overview", {
-        method: "GET",
-        signal: controller.signal
+        bookingTerverifikasi: Number(
+          data.verifiedBookings || 0
+        ),
+
+        menungguPembayaran: Number(
+          data.pendingPayments || 0
+        ),
+
+        estimasiOmset: Number(
+          data.totalRevenue || 0
+        ),
       });
 
-      clearTimeout(timeoutId);
+      setReviews(data.latestReviews || []);
 
-      return true;
-
+      setIsBackendOnline(true);
     } catch (error) {
+      console.log(error);
 
-      console.log("Backend offline:", error);
-
-      return false;
+      setIsBackendOnline(false);
     }
   };
 
   // ========================================
-  // FETCH STATS
-  // ========================================
-  const fetchDashboardStats = async () => {
-
-  try {
-
-    const response = await apiFetch(
-      "/analytics/overview"
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        "Gagal memuat statistik"
-      );
-    }
-
-    const data = await response.json();
-
-    console.log("Analytics:", data);
-
-    setStats({
-      totalTempat: Number(
-        data.totalSpaces || 0
-      ),
-
-      bookingTerverifikasi: Number(
-        data.verifiedBookings || 0
-      ),
-
-      menungguPembayaran: Number(
-        data.pendingPayments || 0
-      ),
-
-      estimasiOmset: Number(
-        data.totalRevenue || 0
-      ),
-    });
-
-    // latest reviews
-    if (data.latestReviews) {
-
-      setReviews(
-        data.latestReviews.map(
-          (review: any) => ({
-            id: review.id,
-            nama: "Customer",
-            rating: review.rating,
-            komentar: review.comment,
-          })
-        )
-      );
-
-    }
-
-  } catch (error) {
-
-    console.warn(
-      "Gagal mengambil statistik:",
-      error
-    );
-
-  }
-
-};
-
-  // ========================================
   // FETCH CHART
   // ========================================
-  const fetchChartData = async () => {
-
+  const fetchChart = async () => {
     try {
-
-      const response = await apiFetch("/analytics/chart");
-
-      if (!response.ok) {
-        throw new Error("Gagal memuat grafik");
-      }
+      const response = await apiFetch(
+        "/analytics/chart"
+      );
 
       const data = await response.json();
 
-      setChartData(data);
+      setRevenueChart(data.revenueChart || []);
 
+      setBookingChart(data.bookingChart || []);
     } catch (error) {
-
-      console.warn(error);
-
+      console.log(error);
     }
   };
 
@@ -420,107 +320,51 @@ export function Home() {
   // INIT
   // ========================================
   useEffect(() => {
+    const token = getToken();
 
-    const init = async () => {
+    if (!token) {
+      logout();
+      return;
+    }
 
-      const token = getToken();
-
-      if (!token) {
-        logout();
-        return;
-      }
-
-      const online = await checkBackendStatus();
-
-      setIsBackendOnline(online);
-
-      if (online) {
-
-        await Promise.all([
-          fetchDashboardStats(),
-          fetchChartData()
-        ]);
-
-      }
-    };
-
-    init();
-
+    fetchOverview();
+    fetchChart();
   }, []);
-
-  // ========================================
-  // REVIEW
-  // ========================================
-  const handleAddReview = (e: React.FormEvent) => {
-
-    e.preventDefault();
-
-    if (!newReviewText.trim()) return;
-
-    const newReview: Review = {
-      id: Date.now(),
-      nama: "Simulasi Pengguna",
-      rating: newReviewRating,
-      komentar: newReviewText.trim()
-    };
-
-    setReviews([newReview, ...reviews]);
-
-    setNewReviewText('');
-
-    setNewReviewRating(5);
-  };
 
   // ========================================
   // STARS
   // ========================================
   const renderStars = (rating: number) => {
-
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        size={12}
+        size={14}
         className={
           i < rating
             ? "fill-amber-500 text-amber-500"
-            : "text-gray-300"
+            : "text-zinc-300"
         }
       />
     ));
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-slate-800 font-sans flex flex-col md:flex-row relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF8F5] flex">
 
       {/* MOBILE HEADER */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-[#121212] text-white w-full sticky top-0 z-50 shadow-md">
-
-        <div className="flex items-center gap-2">
-
-          <div className="p-1.5 bg-amber-500 rounded-lg text-black">
-            <Building2 size={16} />
-          </div>
-
-          <div>
-            <span className="font-bold tracking-wider text-xs block text-white">
-              STAYCATION
-              <span className="text-amber-500">SPACE</span>
-            </span>
-
-            <span className="text-[9px] text-gray-400 block -mt-0.5">
-              CONSOLES ADMIN
-            </span>
-          </div>
-
-        </div>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#121212] p-4 flex items-center justify-between text-white">
+        <h1 className="font-bold">
+          STAYCATION
+          <span className="text-amber-500">SPACE</span>
+        </h1>
 
         <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-1.5 hover:bg-zinc-800 rounded text-amber-500 transition-colors"
+          onClick={() =>
+            setIsSidebarOpen(!isSidebarOpen)
+          }
         >
-          <Menu size={20} />
+          <Menu />
         </button>
-
       </div>
 
       {/* SIDEBAR */}
@@ -532,96 +376,232 @@ export function Home() {
         setShowLogoutModal={setShowLogoutModal}
       />
 
-      {/* OVERLAY */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-30 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
       {/* MAIN */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full">
+      <main className="flex-1 p-6 md:p-8">
 
-        <div className="max-w-[1300px] mx-auto space-y-6 lg:space-y-8">
+        {/* STATUS */}
+        <div className="flex justify-between items-center text-sm mb-6">
+          <div className="flex items-center gap-2">
+            <span>Status:</span>
 
-          {/* STATUS */}
-          <div className="flex items-center justify-between text-xs">
+            {isBackendOnline ? (
+              <span className="text-emerald-600 font-bold">
+                Backend Connected
+              </span>
+            ) : (
+              <span className="text-red-500 font-bold">
+                Backend Offline
+              </span>
+            )}
+          </div>
 
-            <div className="flex items-center gap-2">
+          <span className="text-slate-500">
+            {isBackendOnline
+              ? "Live Data"
+              : "Disconnected"}
+          </span>
+        </div>
 
-              <span>Status:</span>
+        {/* TITLE */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">
+            Dashboard
+          </h1>
 
-              {isBackendOnline ? (
-                <span className="text-emerald-600 font-bold">
-                  Backend Connected
-                </span>
+          <p className="text-slate-500 mt-2">
+            Ringkasan aktivitas admin
+          </p>
+        </div>
+
+        {/* STATS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+          <div className="bg-white border rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-400 uppercase font-bold">
+                  Total Tempat
+                </p>
+
+                <h2 className="text-3xl font-bold mt-3">
+                  {stats.totalTempat}
+                </h2>
+              </div>
+
+              <Building2 className="text-blue-500" />
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-400 uppercase font-bold">
+                  Booking Verified
+                </p>
+
+                <h2 className="text-3xl font-bold mt-3">
+                  {stats.bookingTerverifikasi}
+                </h2>
+              </div>
+
+              <CheckCircle2 className="text-emerald-500" />
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-400 uppercase font-bold">
+                  Pending Payment
+                </p>
+
+                <h2 className="text-3xl font-bold mt-3">
+                  {stats.menungguPembayaran}
+                </h2>
+              </div>
+
+              <Clock3 className="text-orange-500" />
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-400 uppercase font-bold">
+                  Estimasi Omset
+                </p>
+
+                <h2 className="text-2xl font-bold mt-3">
+                  {formatRupiah(
+                    stats.estimasiOmset
+                  )}
+                </h2>
+              </div>
+
+              <DollarSign className="text-purple-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* CHART + REVIEW */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+          {/* CHART */}
+          <div className="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm">
+
+            <h2 className="font-bold text-lg mb-6">
+              Revenue Chart
+            </h2>
+
+            <div className="space-y-5">
+
+              {revenueChart.map((item, index) => (
+                <div key={index}>
+
+                  <div className="flex justify-between mb-2 text-sm">
+                    <span>{item.month}</span>
+
+                    <span className="font-semibold">
+                      {formatRupiah(
+                        Number(item.revenue)
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+
+                    <div
+                      className="h-full bg-amber-500 rounded-full"
+                      style={{
+                        width: `${Math.min(
+                          Number(item.revenue) / 50000,
+                          100
+                        )}%`,
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+              ))}
+
+            </div>
+
+            <div className="mt-8">
+
+              <h2 className="font-bold text-lg mb-6">
+                Booking Chart
+              </h2>
+
+              <div className="space-y-5">
+
+                {bookingChart.map((item, index) => (
+                  <div key={index}>
+
+                    <div className="flex justify-between mb-2 text-sm">
+                      <span>{item.month}</span>
+
+                      <span className="font-semibold">
+                        {item.bookings} Booking
+                      </span>
+                    </div>
+
+                    <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+
+                      <div
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{
+                          width: `${Number(
+                            item.bookings
+                          ) * 10}%`,
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* REVIEWS */}
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+
+            <h2 className="font-bold text-lg mb-5">
+              Latest Reviews
+            </h2>
+
+            <div className="space-y-4 max-h-[500px] overflow-y-auto">
+
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="border rounded-xl p-4"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+
+                      <div className="flex gap-1">
+                        {renderStars(review.rating)}
+                      </div>
+
+                    </div>
+
+                    <p className="text-sm text-slate-600">
+                      "{review.comment}
+                    </p>
+                  </div>
+                ))
               ) : (
-                <span className="text-red-500 font-bold">
-                  Backend Offline
-                </span>
+                <p className="text-slate-400 text-sm">
+                  Belum ada review
+                </p>
               )}
 
-            </div>
-
-            <div className="text-slate-500">
-              {isBackendOnline ? "Live Data" : "Disconnected"}
-            </div>
-
-          </div>
-
-          {/* TITLE */}
-          <div>
-            <h1 className="text-2xl font-bold">
-              Dashboard
-            </h1>
-
-            <p className="text-sm text-slate-500 mt-1">
-              Ringkasan aktivitas admin
-            </p>
-          </div>
-
-          {/* STATS */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-            <div className="bg-white p-4 rounded-xl border shadow-sm">
-              <p className="text-xs text-slate-400 uppercase font-bold">
-                Total Tempat
-              </p>
-
-              <h2 className="text-3xl font-bold mt-2">
-                {stats.totalTempat}
-              </h2>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl border shadow-sm">
-              <p className="text-xs text-slate-400 uppercase font-bold">
-                Booking Terverifikasi
-              </p>
-
-              <h2 className="text-3xl font-bold mt-2">
-                {stats.bookingTerverifikasi}
-              </h2>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl border shadow-sm">
-              <p className="text-xs text-slate-400 uppercase font-bold">
-                Menunggu Pembayaran
-              </p>
-
-              <h2 className="text-3xl font-bold mt-2">
-                {stats.menungguPembayaran}
-              </h2>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl border shadow-sm">
-              <p className="text-xs text-slate-400 uppercase font-bold">
-                Estimasi Omset
-              </p>
-
-              <h2 className="text-3xl font-bold mt-2">
-                Rp {stats.estimasiOmset}
-              </h2>
             </div>
 
           </div>
@@ -632,30 +612,32 @@ export function Home() {
 
       {/* LOGOUT MODAL */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
 
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
 
-            <h3 className="font-bold text-lg">
+            <h2 className="text-xl font-bold">
               Logout?
-            </h3>
+            </h2>
 
-            <p className="text-sm text-slate-500 mt-2">
-              Yakin ingin logout?
+            <p className="text-slate-500 mt-2">
+              Yakin mau logout?
             </p>
 
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-3 mt-6">
 
               <button
-                onClick={() => setShowLogoutModal(false)}
-                className="px-4 py-2 rounded-lg bg-slate-100"
+                onClick={() =>
+                  setShowLogoutModal(false)
+                }
+                className="px-4 py-2 bg-slate-100 rounded-lg"
               >
                 Batal
               </button>
 
               <button
                 onClick={logout}
-                className="px-4 py-2 rounded-lg bg-red-500 text-white"
+                className="px-4 py-2 bg-red-500 text-white rounded-lg"
               >
                 Logout
               </button>
@@ -672,3 +654,4 @@ export function Home() {
 }
 
 export default Home;
+
