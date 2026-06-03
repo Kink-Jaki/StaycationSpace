@@ -121,34 +121,103 @@ app.patch("/:id/price", authMiddleware, adminOnly, async (c) => {
 // =========================
 // UPLOAD IMAGE (LOCAL STORAGE)
 // =========================
-app.post("/:id/images", authMiddleware, adminOnly, async (c) => {
-  const spaceId = Number(c.req.param("id"));
+app.post(
+  "/:id/images",
+  authMiddleware,
+  adminOnly,
+  async (c) => {
 
-  const form = await c.req.formData();
-  const file = form.get("file") as File;
+    const spaceId = Number(
+      c.req.param("id")
+    );
 
-  if (!file) {
-    return c.json({ message: "File tidak ditemukan" }, 400);
+    // cek space ada atau tidak
+    const existingSpace = await db
+      .select()
+      .from(spaces)
+      .where(eq(spaces.id, spaceId));
+
+    if (!existingSpace[0]) {
+      return c.json(
+        { message: "Space tidak ditemukan" },
+        404
+      );
+    }
+
+    const form = await c.req.formData();
+
+    // support multiple upload
+    const files = form.getAll("files") as File[];
+
+    if (!files.length) {
+      return c.json(
+        { message: "File tidak ditemukan" },
+        400
+      );
+    }
+
+    // bikin folder uploads otomatis
+    await mkdir("uploads", {
+      recursive: true,
+    });
+
+    const uploadedImages = [];
+
+    for (const file of files) {
+
+      // validasi image
+      if (
+        !file.type.startsWith("image/")
+      ) {
+        continue;
+      }
+
+      const ext = file.name
+        .split(".")
+        .pop();
+
+      const fileName =
+        `${randomUUID()}.${ext}`;
+
+      const filePath = path.join(
+        "uploads",
+        fileName
+      );
+
+      const buffer = Buffer.from(
+        await file.arrayBuffer()
+      );
+
+      await writeFile(
+        filePath,
+        buffer
+      );
+
+      // path frontend
+      const imageUrl =
+        `/uploads/${fileName}`;
+
+      // save database
+      const image =
+        await db
+          .insert(spaceImages)
+          .values({
+            spaceId,
+            imageUrl,
+          })
+          .returning();
+
+      uploadedImages.push(
+        image[0]
+      );
+    }
+
+    return c.json({
+      message:
+        "Upload berhasil",
+      data: uploadedImages,
+    });
   }
-
-  await mkdir("uploads", { recursive: true });
-
-  const ext = file.name.split(".").pop();
-  const fileName = `${randomUUID()}.${ext}`;
-
-  const filePath = path.join("uploads", fileName);
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer);
-
-  const imageUrl = `http://192.168.111.152:3000/uploads/${fileName}`;
-
-  const image = await db.insert(spaceImages).values({
-    spaceId,
-    imageUrl,
-  }).returning();
-
-  return c.json(image[0]);
-});
+);
 
 export default app;
