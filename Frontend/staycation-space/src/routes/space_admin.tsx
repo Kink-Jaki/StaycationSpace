@@ -139,7 +139,7 @@ export default function Space() {
             <h1 className="text-2xl font-bold text-zinc-900">Daftar Properti Anda</h1>
             <p className="text-zinc-500 mt-1">Kelola listing studio dan space Anda.</p>
           </div>
-          <button onClick={() => window.location.href = '/tambah'} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+          <button onClick={() => window.location.href = '/tambah'} className="flex items-center gap-2 bg-yellow-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-yellow-700 transition-colors">
             <Plus size={20} /> Tambah
           </button>
         </div>
