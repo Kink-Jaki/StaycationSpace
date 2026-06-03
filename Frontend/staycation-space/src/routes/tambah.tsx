@@ -16,6 +16,8 @@ import {
   Image as PhotoIcon
 } from 'lucide-react';
 
+const API_BASE_URL = "http://192.168.111.152:3000";
+
 interface MenuItem {
   name: string;
   icon: React.ComponentType<any>;
@@ -94,11 +96,99 @@ export function TambahSpace() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  
+  const [formData, setFormData] = useState({
+    nama: "",
+    kategori: "",
+    kapasitas: "",
+    deskripsi: "",
+    alamat: "",
+    hargaDasar: "",
+    depositJaminan: "",
+  });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
-    // Berhasil menyimpan, langsung arahkan ke halaman Space
-    window.location.href = '/space';
+
+    const payload = new FormData();
+    payload.append("name", formData.nama);
+    payload.append(
+      "type",
+      formData.kategori === "studio_foto"
+        ? "studio"
+        : formData.kategori === "studio_musik"
+        ? "studio"
+        : formData.kategori === "villa"
+        ? "villa"
+        : formData.kategori === "coworking"
+        ? "hall"
+        : "other"
+    );
+    payload.append("description", formData.deskripsi);
+    payload.append("address", formData.alamat);
+    payload.append("capacity", Number(formData.kapasitas).toString());
+    payload.append("pricePerHour", Number(formData.hargaDasar).toString());
+    payload.append("deposit", Number(formData.depositJaminan).toString());
+
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      console.log("TOKEN:", token);
+
+      if (!token) {
+        alert("Silakan login terlebih dahulu");
+        window.location.href = "/login";
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/spaces`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: payload,
+      });
+
+      const responseText = await response.text();
+      console.log("RAW RESPONSE:", responseText);
+
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = { message: responseText };
+}
+      console.log("STATUS:", response.status);
+      console.log("RESPONSE:", data);
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data));
+      }
+
+      alert("Data berhasil ditambahkan");
+
+      window.location.href = "/space_admin";
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan");
+    }
   };
 
   return (
@@ -130,37 +220,36 @@ export function TambahSpace() {
                 <div className="sm:col-span-6">
                   <label htmlFor="nama_tempat" className="block text-sm font-medium text-zinc-900">NAMA TEMPAT</label>
                   <div className="mt-2">
-                    <input id="nama_tempat" type="text" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: Studio Foto Minimalis" required />
+                    <input id="nama_tempat" name="nama" value={formData.nama} onChange={handleChange} type="text" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: Studio Foto Minimalis" required />
                   </div>
                 </div>
                 <div className="sm:col-span-3">
                   <label htmlFor="kategori" className="block text-sm font-medium text-zinc-900">KATEGORI TEMPAT</label>
                   <div className="mt-2">
-                    <select id="kategori" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" required>
-                      <option value="">Pilih Kategori Tempat</option>
-                      <option value="perjam">Studio Foto</option>
-                      <option value="perhari">Studio Musik</option>
-                      <option value="perhari">Villa</option>
-                      <option value="perhari">Coworking Space</option>
+                    <select id="kategori" name="kategori" value={formData.kategori} onChange={handleChange} className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" required>
+                      <option value="studio_foto">Studio Foto</option>
+                      <option value="studio_musik">Studio Musik</option>
+                      <option value="villa">Villa</option>
+                      <option value="coworking">Coworking Space</option>
                     </select>
                   </div>
                 </div>
                 <div className="sm:col-span-3">
                   <label htmlFor="kapasitas" className="block text-sm font-medium text-zinc-900">KAPASITAS MAKSIMAL</label>
                   <div className="mt-2">
-                    <input id="kapasitas" type="number" min="1" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 5 orang" required/>
+                    <input id="kapasitas" name="kapasitas" value={formData.kapasitas} onChange={handleChange} type="number" min="1" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 5 orang" required/>
                   </div>
                 </div>
                 <div className="col-span-full">
                   <label htmlFor="deskripsi" className="block text-sm font-medium text-zinc-900">DESKRIPSI</label>
                   <div className="mt-2">
-                    <textarea id="deskripsi" rows={3} className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Ceritakan kelebihan, alat, dan fasilitas yang tersedia." required/>
+                    <textarea id="deskripsi" name="deskripsi" value={formData.deskripsi} onChange={handleChange} rows={3} className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Ceritakan kelebihan, alat, dan fasilitas yang tersedia." required/>
                   </div>
                 </div>
                 <div className="col-span-full">
                   <label htmlFor="alamat" className="block text-sm font-medium text-zinc-900">ALAMAT LENGKAP</label>
                   <div className="mt-2">
-                    <textarea id="alamat" rows={3} className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Masukkan alamat lengkap properti Anda." required/>
+                    <textarea id="alamat" name="alamat" value={formData.alamat} onChange={handleChange} rows={3} className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Masukkan alamat lengkap properti Anda." required/>
                   </div>
                 </div>
               </div>
@@ -193,6 +282,7 @@ export function TambahSpace() {
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) {
+                                setImageFile(file);
                                 setPreview(URL.createObjectURL(file));
                               }
                             }}
@@ -224,33 +314,16 @@ export function TambahSpace() {
               <p className="mt-1 text-sm text-zinc-600">konfigurasi nilai penawaran, jaminan, serta sistem perhitungan waktu secara detail</p>
               <div className="mt-8 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                 <div className="sm:col-span-3">
-                  <label htmlFor="sewa" className="block text-sm font-medium text-zinc-900">SISTEM SEWA DASAR</label>
-                  <div className="mt-2">
-                    <select id="sewa" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" required>
-                      <option value="">Pilih Sistem Sewa</option>
-                      <option value="perjam">Per Jam (Cocok untuk Studio)</option>
-                      <option value="perhari">Per Hari (Cocok untuk Villa)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="sm:col-span-3">
                   <label htmlFor="harga_dasar" className="block text-sm font-medium text-zinc-900">HARGA DASAR (IDR)</label>
                   <div className="mt-2">
-                    <input id="harga_dasar" type="number" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 150000" required />
+                    <input id="harga_dasar" name="hargaDasar" value={formData.hargaDasar} onChange={handleChange} type="number" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 150000" required />
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">Tarif standar yang berlaku pada hari kerja (Senin - Jumat)</p>
-                </div>
-                <div className="sm:col-span-3">
-                  <label htmlFor="harga_akhir_pekan" className="block text-sm font-medium text-zinc-900">HARGA AKHIR PEKAN (IDR)</label>
-                  <div className="mt-2">
-                    <input id="harga_akhir_pekan" type="number" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 200000" required />
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1">Tarif standar yang berlaku pada hari Sabtu - Minggu dan hari libur nasional</p>
+                  <p className="text-xs text-zinc-500 mt-1">Tarif standar yang berlaku pada hari kerja (Senin - Jumat) dan dihitung per jam</p>
                 </div>
                 <div className="sm:col-span-3">
                   <label htmlFor="deposit_jaminan" className="block text-sm font-medium text-zinc-900">DEPOSIT JAMINAN (IDR)</label>
                   <div className="mt-2">
-                    <input id="deposit_jaminan" type="number" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 250000" required />
+                    <input id="deposit_jaminan" name="depositJaminan" value={formData.depositJaminan} onChange={handleChange} type="number" className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Contoh: 250000" required />
                   </div>
                   <p className="text-xs text-zinc-500 mt-1">Biaya jaminan yang dikembalikan setelah masa sewa selesai (Dianjurkan untuk villa)</p>
                 </div>
