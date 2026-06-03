@@ -1,0 +1,340 @@
+import { createFileRoute } from '@tanstack/react-router'
+import React, { useState } from 'react';
+import {
+  User, 
+  Building, 
+  Eye, 
+  EyeOff, 
+  Sparkles, 
+  ChevronRight, 
+  CheckCircle, 
+  ShieldCheck,
+  UserPlus,
+  Lock
+} from 'lucide-react';
+
+export const Route = createFileRoute('/login')({
+  component: Home,
+})
+
+export default function App() {
+  // State utama untuk melacak tab aktif ('login' atau 'register')
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  
+  // State form login
+  const [loginEmail, setLoginEmail] = useState<string>('admin@staycation.space');
+  const [loginPassword, setLoginPassword] = useState<string>('password123');
+  
+  // State form register
+  const [registerUsername, setRegisterUsername] = useState<string>('');
+  const [registerEmail, setRegisterEmail] = useState<string>('');
+  const [registerPassword, setRegisterPassword] = useState<string>('');
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState<string>('');
+
+  // State untuk visibilitas kata sandi
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+
+  // State untuk notifikasi visual sederhana
+  const [notification, setNotification] = useState<string | null>(null);
+
+  // Fungsi pengisian otomatis (Uji Coba Cepat)
+  const handleAutofill = () => {
+    if (activeTab === 'login') {
+      setLoginEmail('admin@staycation.space');
+      setLoginPassword('password123');
+      showNotification('Kredensial bawaan berhasil dimasukkan!');
+    } else {
+      setRegisterUsername('budi.staycation');
+      setRegisterEmail('budi@staycation.space');
+      setRegisterPassword('Rahasia123!');
+      setRegisterConfirmPassword('Rahasia123!');
+      showNotification('Formulir pendaftaran berhasil diisi!');
+    }
+  };
+
+  // Fungsi memunculkan notifikasi kustom (dengan tipe parameter string)
+  const showNotification = (message: string) => {
+    setNotification(message);
+  };
+
+  // Fungsi submit dengan tipe event React.FormEvent
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (activeTab === "login") {
+      showNotification(`Simulasi: Berhasil masuk sebagai ${loginEmail}!`);
+    } else {
+      if (registerPassword !== registerConfirmPassword) {
+        showNotification("Simulasi Gagal: Konfirmasi kata sandi tidak cocok!");
+        return;
+      }
+      showNotification("Simulasi: Berhasil mendaftarkan akun baru!");
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-white antialiased font-sans">
+      
+      {/* Toast Notification Container */}
+      {notification && (
+        <div className="fixed top-5 right-5 z-50 w-full max-w-sm bg-white rounded-xl shadow-lg border border-neutral-100 p-4 transition-all duration-300">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-neutral-800">{notification}</p>
+            </div>
+            <button 
+              onClick={() => setNotification(null)}
+              className="text-neutral-400 hover:text-neutral-600 text-xs font-bold px-2 py-1 hover:bg-neutral-100 rounded"
+              title="Tutup Notifikasi"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- PANEL KIRI (Banner Promosi & Branding) --- */}
+      <div className="hidden lg:flex bg-gradient-to-tr from-stone-900 to-amber-950 relative overflow-hidden flex-col justify-between p-12 text-white">
+        <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center mix-blend-overlay"></div>
+        
+        {/* Logo Kiri */}
+        <div className="relative z-10 flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
+            <Building className="w-5 h-5 text-stone-950" />
+          </div>
+          <div>
+            <span className="text-xl font-bold tracking-wider uppercase">
+              Staycation<span className="text-amber-400 font-light">Space</span>
+            </span>
+            <p className="text-[10px] text-amber-200/80 tracking-widest uppercase">Admin & User Console</p>
+          </div>
+        </div>
+
+        {/* Tagline Kreatif */}
+        <div className="relative z-10 my-auto max-w-md">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-xs text-amber-300 mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Akses Cepat & Aman</span>
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-serif font-semibold leading-tight text-stone-100">
+            Temukan Kenyamanan dalam <span className="text-amber-400 italic">Satu Portal Utama.</span>
+          </h1>
+          <p className="mt-4 text-stone-300 text-sm leading-relaxed">
+            Selamat datang di gerbang masuk Staycation Space. Masuk ke akun Anda untuk mulai mengelola atau memesan studio foto, villa, dan sesi pemotretan estetis.
+          </p>
+        </div>
+
+        {/* Footer Kiri */}
+        <div className="relative z-10 flex justify-between items-center text-xs text-stone-400 border-t border-white/10 pt-6">
+          <span>© 2026 Staycation Space System v2.5</span>
+          <span className="flex items-center gap-1">
+            <CheckCircle className="w-3 h-3 text-emerald-400" /> SSL Secured Connection
+          </span>
+        </div>
+      </div>
+
+      {/* --- PANEL KANAN (Form Log Masuk & Daftar) --- */}
+      <div className="flex flex-col justify-between items-center p-6 sm:p-12 bg-white min-h-screen">
+        
+        {/* Spacing element untuk estetika layout vertikal */}
+        <div className="hidden sm:block h-2"></div>
+
+        {/* Card Utama */}
+        <div className="w-full max-w-[440px] my-auto">
+          
+          {/* Header */}
+          <div className="mb-6">
+            <h2 className="text-[32px] font-bold text-neutral-900 tracking-tight font-serif mb-2">
+              Portal Log Masuk
+            </h2>
+            <p className="text-neutral-500 text-sm">
+              Pilih hak akses di bawah dan masukkan kredensial Anda.
+            </p>
+          </div>
+
+          {/* Tab Selektor (Pills) */}
+          <div className="grid grid-cols-2 gap-2 bg-neutral-100/50 p-1.5 rounded-[18px] mb-6 border border-neutral-200/30">
+            {/* Tab Kiri - Portal Admin */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('login');
+                setShowPassword(false);
+              }}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'login'
+                  ? 'bg-[#1a1816] text-white shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              Portal Admin
+            </button>
+
+            {/* Tab Kanan - Portal User */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('register');
+                setShowPassword(false);
+                setShowConfirmPassword(false);
+              }}
+              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
+                activeTab === 'register'
+                  ? 'bg-[#1a1816] text-white shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-800'
+              }`}
+            >
+              <UserPlus className="w-4 h-4 shrink-0" />
+              Portal User
+            </button>
+          </div>
+
+          {/* Form Input Dinamis */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* INPUT REGISTER ONLY: Nama Pengguna */}
+            {activeTab === 'register' && (
+              <div className="space-y-1.5 transition-all duration-200">
+                <label className="block text-[11px] font-bold text-neutral-500 tracking-wider uppercase">
+                  NAMA PENGGUNA
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
+                    <User className="w-5 h-5" />
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Masukkan username baru"
+                    value={registerUsername}
+                    onChange={(e) => setRegisterUsername(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#fbfafa] border border-neutral-200 rounded-xl text-neutral-800 text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-800/10 focus:border-neutral-500 transition-all duration-200"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ALAMAT EMAIL */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-neutral-500 tracking-wider uppercase">
+                ALAMAT EMAIL
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
+                  <User className="w-5 h-5" />
+                </span>
+                <input
+                  type="email"
+                  required
+                  placeholder={activeTab === 'login' ? 'admin@staycation.space' : 'contoh@staycation.space'}
+                  value={activeTab === 'login' ? loginEmail : registerEmail}
+                  onChange={(e) => activeTab === 'login' ? setLoginEmail(e.target.value) : setRegisterEmail(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 bg-[#fbfafa] border border-neutral-200 rounded-xl text-neutral-800 text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-800/10 focus:border-neutral-500 transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* KATA SANDI */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-neutral-500 tracking-wider uppercase">
+                KATA SANDI
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
+                  <Lock className="w-5 h-5" />
+                </span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••"
+                  value={activeTab === 'login' ? loginPassword : registerPassword}
+                  onChange={(e) => activeTab === 'login' ? setLoginPassword(e.target.value) : setRegisterPassword(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3.5 bg-[#fbfafa] border border-neutral-200 rounded-xl text-neutral-800 text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-800/10 focus:border-neutral-500 transition-all duration-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-400 hover:text-neutral-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* INPUT REGISTER ONLY: Konfirmasi Kata Sandi */}
+            {activeTab === 'register' && (
+              <div className="space-y-1.5 transition-all duration-200">
+                <label className="block text-[11px] font-bold text-neutral-500 tracking-wider uppercase">
+                  KONFIRMASI KATA SANDI
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
+                    <Lock className="w-5 h-5" />
+                  </span>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••"
+                    value={registerConfirmPassword}
+                    onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                    className="w-full pl-11 pr-11 py-3.5 bg-[#fbfafa] border border-neutral-200 rounded-xl text-neutral-800 text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-800/10 focus:border-neutral-500 transition-all duration-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-400 hover:text-neutral-600 focus:outline-none"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tombol Submit Utama */}
+            <button
+              type="submit"
+              className="w-full py-4 mt-2 bg-[#1a1816] hover:bg-[#2c2824] text-white font-semibold rounded-xl text-sm transition-all duration-150 flex items-center justify-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-neutral-800 focus:ring-offset-2"
+            >
+              <span>{activeTab === 'login' ? 'Masuk Sekarang' : 'Daftar Sekarang'}</span>
+              <ChevronRight className="w-4 h-4 text-neutral-300" />
+            </button>
+          </form>
+
+          {/* Box Mode Uji Coba Cepat */}
+          <div className="mt-6 bg-[#fefcf3] border border-[#fbe9c5] rounded-2xl p-4 sm:p-5">
+            <div className="flex items-start gap-2.5 mb-3">
+              <Sparkles className="w-5 h-5 text-[#d0690b] shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-[#d0690b]">
+                  Mode Uji Coba Cepat
+                </h4>
+                <p className="text-xs text-[#b47a3e] mt-1 leading-relaxed">
+                  {activeTab === 'login' 
+                    ? 'Klik tombol di bawah untuk langsung memulihkan kredensial bawaan Admin.'
+                    : 'Klik tombol di bawah untuk mengisi formulir simulasi pendaftaran akun baru.'}
+                </p>
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={handleAutofill}
+              className="w-full py-3 bg-[#d97706] hover:bg-[#c26500] text-white font-semibold rounded-xl text-xs sm:text-sm tracking-wide transition-colors duration-150 shadow-sm"
+            >
+              {activeTab === 'login' ? 'Atur Ulang Kredensial Admin' : 'Simulasikan Data Pendaftaran'}
+            </button>
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <footer className="text-[12px] text-neutral-400 text-center mt-6">
+          Staycation Space System © 2026. Dibuat dengan <span className="text-rose-400">❤️</span> .
+        </footer>
+      </div>
+
+    </div>
+  );
+}
