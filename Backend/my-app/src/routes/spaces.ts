@@ -18,17 +18,19 @@ const app = new Hono();
 // =========================
 // CREATE SPACE
 // =========================
-app.post("/",authMiddleware,adminOnly, async (c) => {
-  const body = await c.req.json();
+app.post("/", authMiddleware, adminOnly, async (c) => {
+  const body = await c.req.parseBody();
 
-  const result = await db.insert(spaces).values({
-    name: body.name,
-    type: body.type,
-    description: body.description,
-    pricePerHour: body.pricePerHour,
-    capacity: body.capacity,
+  const result = await db.insert(spaces).values([{
+    name: body.name as string,
+    type: body.type as "studio" | "villa" | "hall" | "other",
+    description: body.description as string,
+    pricePerHour: body.pricePerHour as string,
+    capacity: body.capacity ? Number(body.capacity) : null,
+    address: body.address as string,
+    deposit: body.deposit as string,
     status: "active",
-  }).returning();
+  }]).returning();
 
   return c.json(result[0]);
 });
@@ -61,18 +63,20 @@ app.get("/:id", async (c) => {
 // =========================
 // UPDATE SPACE
 // =========================
-app.put("/:id",authMiddleware,adminOnly, async (c) => {
+app.put("/:id", authMiddleware, adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
-  const body = await c.req.json();
+  const body = await c.req.parseBody();
 
   const updated = await db
     .update(spaces)
     .set({
-      name: body.name,
-      type: body.type,
-      description: body.description,
-      capacity: body.capacity,
-      status: body.status,
+      name: body.name as string,
+      type: body.type as "studio" | "villa" | "hall" | "other",
+      description: body.description as string,
+      capacity: body.capacity ? Number(body.capacity) : null,
+      status: body.status as "active" | "inactive",
+      address: body.address as string,
+      deposit: body.deposit as string,
       updatedAt: new Date(),
     })
     .where(eq(spaces.id, id))
@@ -85,7 +89,7 @@ app.put("/:id",authMiddleware,adminOnly, async (c) => {
 // =========================
 // DELETE SPACE
 // =========================
-app.delete("/:id",authMiddleware,adminOnly, async (c) => {
+app.delete("/:id", authMiddleware, adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
   await db.delete(spaces).where(eq(spaces.id, id));
@@ -97,14 +101,14 @@ app.delete("/:id",authMiddleware,adminOnly, async (c) => {
 // =========================
 // UPDATE PRICE ONLY
 // =========================
-app.patch("/:id/price",authMiddleware,adminOnly, async (c) => {
+app.patch("/:id/price", authMiddleware, adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
-  const body = await c.req.json();
+  const body = await c.req.parseBody();
 
   const updated = await db
     .update(spaces)
     .set({
-      pricePerHour: body.pricePerHour,
+      pricePerHour: body.pricePerHour as string,
       updatedAt: new Date(),
     })
     .where(eq(spaces.id, id))
@@ -117,7 +121,7 @@ app.patch("/:id/price",authMiddleware,adminOnly, async (c) => {
 // =========================
 // UPLOAD IMAGE (LOCAL STORAGE)
 // =========================
-app.post("/:id/images",authMiddleware,adminOnly, async (c) => {
+app.post("/:id/images", authMiddleware, adminOnly, async (c) => {
   const spaceId = Number(c.req.param("id"));
 
   const form = await c.req.formData();
@@ -127,7 +131,7 @@ app.post("/:id/images",authMiddleware,adminOnly, async (c) => {
     return c.json({ message: "File tidak ditemukan" }, 400);
   }
 
-  await mkdir("uploads", { recursive: true }); //cek folder uploads
+  await mkdir("uploads", { recursive: true });
 
   const ext = file.name.split(".").pop();
   const fileName = `${randomUUID()}.${ext}`;

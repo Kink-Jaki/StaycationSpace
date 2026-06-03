@@ -32,6 +32,13 @@ export const spaces = pgTable("spaces", {
     .notNull()
     .default("active"),
 
+  address: text("address")
+    .notNull(),
+
+  deposit: numeric("deposit", { precision: 12, scale: 2 })
+    .notNull()
+    .default("0"),
+
   createdAt: timestamp("created_at")
     .defaultNow(),
 
