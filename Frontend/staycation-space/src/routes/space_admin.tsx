@@ -1,9 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Building2, BarChart3, Calendar,
-  CreditCard, Users, LogOut, Settings, Star, Percent,
-  Plus, Edit2, Trash2, ChevronDown, MapPin, ImageOff,
+  LayoutDashboard, 
+  Building2, 
+  BarChart3, 
+  Calendar, 
+  Users, 
+  LogOut, 
+  Settings, 
+  Star, 
+  Percent,
+  Plus, 
+  Edit2, 
+  Trash2, 
+  ChevronDown, 
+  MapPin, 
+  ImageOff,
+  XCircle,
+  CreditCard,
+  CalendarIcon,
 } from "lucide-react";
 
 const API_BASE_URL = "http://192.168.111.152:3000";
@@ -14,42 +29,55 @@ interface Space {
   pricePerHour: string; deposit: string; capacity: number;
   address: string; status: string;
 }
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab?: React.Dispatch<React.SetStateAction<string>>;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowLogoutModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
-const Sidebar = ({ activeTab, isSidebarOpen, setShowLogoutModal }: any) => {
-  const username = localStorage.getItem("username") || "User";
-  const role = localStorage.getItem("role") || "user";
+function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: SidebarProps) {
+  const username = localStorage.getItem('username') ?? 'Admin Staycation';
+  const role = localStorage.getItem('role') ?? 'admin';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  const menuItems: MenuItem[] = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { name: "Space", icon: Building2, path: "/space_admin" },
-    { name: "Booking", icon: Calendar, path: "/booking_admin" },
-    { name: "Customer", icon: Users, path: "/customer" },
-    { name: "Payment", icon: CreditCard, path: "/payment" },
-    { name: "Review", icon: Star, path: "/review" },
-    { name: "Promo", icon: Percent, path: "/promo" },
-    { name: "Report", icon: BarChart3, path: "/report" },
-    { name: "Settings", icon: Settings, path: "/settings" },
+ 
+  const menuItems = [
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { name: 'Space',     icon: Building2,      path: '/space_admin' },
+    { name: 'Booking',   icon: CalendarIcon,   path: '/booking_admin' },
+    { name: 'Customer',  icon: Users,          path: '/customer' },
+    { name: 'Payment',   icon: CreditCard,     path: '/payment' },
+    { name: 'Review',    icon: Star,           path: '/review' },
+    { name: 'Promo',     icon: Percent,        path: '/promo' },
+    { name: 'Report',    icon: BarChart3,      path: '/report' },
+    { name: 'Settings',  icon: Settings,       path: '/settings' },
   ];
-
+ 
   return (
-    <aside className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+    <aside className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex flex-col h-full justify-between">
         <div>
-          <div className="flex items-center gap-2.5 mb-6">
-            <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0"><Building2 size={20} /></div>
-            <div className="min-w-0">
-              <h5 className="font-black tracking-wide text-sm text-white truncate">STAYCATION<span className="text-amber-500">SPACE</span></h5>
-              <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">CONSOLES ADMIN</p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0"><Building2 size={20} /></div>
+              <div className="min-w-0">
+                <h5 className="font-black tracking-wide text-sm text-white truncate">STAYCATION<span className="text-amber-500">SPACE</span></h5>
+                <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">CONSOLES ADMIN</p>
+              </div>
             </div>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-1 text-zinc-400 hover:text-white" aria-label="Tutup sidebar">
+              <XCircle size={20} />
+            </button>
           </div>
           <nav className="space-y-1">
-            {menuItems.map((item) => {
+            {menuItems.map(item => {  
               const Icon = item.icon;
-              const isActive = activeTab === item.name;
+              const isActive = item.name === 'Space'; 
               return (
-                <button key={item.name} onClick={() => (window.location.href = item.path)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isActive ? "bg-amber-500 text-black" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}>
+                <button key={item.name} onClick={() => { window.location.href = item.path; }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10 font-bold' : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-white'}`}
+                >
                   <Icon size={16} /><span>{item.name}</span>
                 </button>
               );
@@ -74,13 +102,13 @@ const Sidebar = ({ activeTab, isSidebarOpen, setShowLogoutModal }: any) => {
                 <p className="text-[9px] text-amber-500 font-extrabold tracking-wider uppercase">{role.toUpperCase()}</p>
               </div>
             </div>
-            <ChevronDown size={14} className={`transition-transform duration-200 ${showProfileMenu ? "rotate-180" : ""}`} />
+            <ChevronDown size={14} className={`transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>
     </aside>
   );
-};
+}
 
 export const Route = createFileRoute("/space_admin")({ component: Space });
 
@@ -151,7 +179,9 @@ export default function Space() {
 
   return (
     <div className="flex h-screen bg-zinc-50">
-      <Sidebar activeTab="Space" isSidebarOpen={isSidebarOpen} setShowLogoutModal={setShowLogoutModal} />
+      <Sidebar activeTab="Space" isSidebarOpen={isSidebarOpen} setShowLogoutModal={setShowLogoutModal} setIsSidebarOpen={function (value: React.SetStateAction<boolean>): void {
+        throw new Error("Function not implemented.");
+      } } />
 
       <main className="flex-1 overflow-y-auto p-8">
         {/* Header */}
@@ -251,7 +281,7 @@ export default function Space() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => (window.location.href = `/edit/${space.id}`)}
+                      <button onClick={() => (window.location.href = `/edit`)}
                         className="p-2 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors">
                         <Edit2 size={15} />
                       </button>

@@ -63,7 +63,7 @@ interface Payment {
 // Config
 // ─────────────────────────────────────────────
  
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.1:3000';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.152:3000';
  
 function getToken(): string {
   return localStorage.getItem('token') ?? '';
