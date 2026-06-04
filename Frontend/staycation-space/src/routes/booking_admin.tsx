@@ -1,11 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard,
   Building2,
   BarChart3,
   Calendar as CalendarIcon,
-  CreditCard,
   Users,
   LogOut,
   Settings,
@@ -641,7 +640,6 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: {
     { name: 'Space',     icon: Building2,      path: '/space_admin' },
     { name: 'Booking',   icon: CalendarIcon,   path: '/booking_admin' },
     { name: 'Customer',  icon: Users,          path: '/customer' },
-    { name: 'Payment',   icon: CreditCard,     path: '/payment' },
     { name: 'Review',    icon: Star,           path: '/review' },
     { name: 'Promo',     icon: Percent,        path: '/promo' },
     { name: 'Report',    icon: BarChart3,      path: '/report' },

@@ -1,9 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Building2, BarChart3, Calendar,
-  CreditCard, Users, LogOut, Settings, Star, Percent,
-  Plus, Edit2, Trash2, ChevronDown, MapPin, ImageOff,
+  LayoutDashboard, 
+  Building2, 
+  BarChart3, 
+  Calendar, 
+  Users, 
+  LogOut, 
+  Settings, 
+  Star, 
+  Percent,
+  Plus, 
+  Edit2, 
+  Trash2, 
+  ChevronDown, 
+  MapPin, 
+  ImageOff,
 } from "lucide-react";
 
 const API_BASE_URL = "http://192.168.111.152:3000";
@@ -25,7 +37,6 @@ const Sidebar = ({ activeTab, isSidebarOpen, setShowLogoutModal }: any) => {
     { name: "Space", icon: Building2, path: "/space_admin" },
     { name: "Booking", icon: Calendar, path: "/booking_admin" },
     { name: "Customer", icon: Users, path: "/customer" },
-    { name: "Payment", icon: CreditCard, path: "/payment" },
     { name: "Review", icon: Star, path: "/review" },
     { name: "Promo", icon: Percent, path: "/promo" },
     { name: "Report", icon: BarChart3, path: "/report" },
@@ -251,7 +262,7 @@ export default function Space() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => (window.location.href = `/edit/${space.id}`)}
+                      <button onClick={() => (window.location.href = `/edit`)}
                         className="p-2 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors">
                         <Edit2 size={15} />
                       </button>
