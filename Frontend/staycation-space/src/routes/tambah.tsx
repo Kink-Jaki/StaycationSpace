@@ -99,134 +99,23 @@ export default function Space() {
   const fetchSpaces = async () => {
     try {
       setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/spaces`);
+      const data: Space[] = await res.json();
+      setSpaces(data);
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Silakan login terlebih dahulu");
-
-        window.location.href = "/login";
-
-        return;
-      }
-
-      // =========================
-      // CREATE SPACE
-      // =========================
-
-      const payload = new FormData();
-
-      payload.append("name", formData.nama);
-
-      payload.append(
-        "type",
-        formData.kategori === "studio_foto"
-          ? "studio"
-          : formData.kategori === "studio_musik"
-          ? "studio"
-          : formData.kategori === "villa"
-          ? "villa"
-          : formData.kategori === "coworking"
-          ? "hall"
-          : "other"
+      const imgs: Record<number, string> = {};
+      await Promise.all(
+        data.map(async (s) => {
+          try {
+            const r = await fetch(`${API_BASE_URL}/spaces/${s.id}/images`);
+            const imgData = await r.json();
+            if (imgData.length > 0) imgs[s.id] = `${API_BASE_URL}${imgData[0].imageUrl}`;
+          } catch {}
+        })
       );
-
-      payload.append(
-        "description",
-        formData.deskripsi
-      );
-
-      payload.append("address", formData.alamat);
-
-      payload.append(
-        "capacity",
-        formData.kapasitas
-      );
-
-      payload.append(
-        "pricePerHour",
-        formData.hargaDasar
-      );
-
-      payload.append(
-        "deposit",
-        formData.depositJaminan
-      );
-
-      const response = await fetch(
-        `${API_BASE_URL}/spaces`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: payload,
-        }
-      );
-
-      const text = await response.text();
-
-      let data;
-
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = { message: text };
-      }
-
-      console.log("SPACE:", data);
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Gagal membuat space"
-        );
-      }
-
-      // =========================
-      // UPLOAD IMAGE
-      // =========================
-
-      if (imageFile) {
-        const imageForm = new FormData();
-
-        imageForm.append("file", imageFile);
-
-        const imageResponse = await fetch(
-          `${API_BASE_URL}/spaces/${data.id}/images`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: imageForm,
-          }
-        );
-
-        const imageText =
-          await imageResponse.text();
-
-        let imageData;
-
-        try {
-          imageData = JSON.parse(imageText);
-        } catch {
-          imageData = { message: imageText };
-        }
-
-        console.log("IMAGE:", imageData);
-
-        if (!imageResponse.ok) {
-          throw new Error("Upload gambar gagal");
-        }
-      }
-
-      alert("Space berhasil dibuat");
-
-      window.location.href = "/space_admin";
-    } catch (error) {
-      console.error(error);
-
-      alert("Terjadi kesalahan");
+      setImageMap(imgs);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
