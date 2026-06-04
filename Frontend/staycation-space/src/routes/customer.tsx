@@ -13,10 +13,11 @@ import {
  
 interface User {
   id: number
-  name: string
+  username?: string // Menyesuaikan dengan kolom Drizzle database
+  name?: string     // Fallback jika API mengembalikan 'name'
   email: string
   phone?: string
-  role: 'admin' | 'customer'
+  role: 'admin' | 'customer' | 'user' // Ditambah 'user' karena Drizzle default-nya 'user'
   createdAt?: string
 }
  
@@ -89,6 +90,8 @@ function Toast({ toast }: { toast: ToastState }) {
  
 function DeleteModal({ user, onClose, onConfirm }: { user: User; onClose: () => void; onConfirm: () => Promise<void> }) {
   const [loading, setLoading] = useState(false)
+  const displayName = user.username || user.name || 'Pengguna'
+
   async function confirm() {
     setLoading(true)
     try { await onConfirm() } finally { setLoading(false) }
@@ -106,7 +109,7 @@ function DeleteModal({ user, onClose, onConfirm }: { user: User; onClose: () => 
           </div>
         </div>
         <p className="text-xs text-zinc-600 mb-5 bg-zinc-50 rounded-xl px-3 py-2.5 border border-zinc-100">
-          Akun <span className="font-bold text-zinc-900">{user.name}</span> ({user.email}) akan dihapus permanen.
+          Akun <span className="font-bold text-zinc-900">{displayName}</span> ({user.email}) akan dihapus permanen.
         </p>
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 transition-colors">Batal</button>
@@ -126,6 +129,9 @@ function DeleteModal({ user, onClose, onConfirm }: { user: User; onClose: () => 
 // ─────────────────────────────────────────────
  
 function DetailModal({ user, onClose }: { user: User; onClose: () => void }) {
+  const displayName = user.username || user.name || 'Pengguna'
+  const displayRole = user.role === 'user' ? 'customer' : user.role
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white rounded-2xl max-w-sm w-full border border-zinc-200 shadow-2xl overflow-hidden">
@@ -142,17 +148,17 @@ function DetailModal({ user, onClose }: { user: User; onClose: () => void }) {
           {/* Avatar */}
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center font-black text-black text-lg shrink-0">
-              {user.name.charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-bold text-zinc-900">{user.name}</p>
+              <p className="text-sm font-bold text-zinc-900">{displayName}</p>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border ${
-                user.role === 'admin'
+                displayRole === 'admin'
                   ? 'bg-amber-50 text-amber-700 border-amber-100'
                   : 'bg-zinc-50 text-zinc-500 border-zinc-200'
               }`}>
-                {user.role === 'admin' ? <UserCheck size={9} /> : <Users size={9} />}
-                {user.role}
+                {displayRole === 'admin' ? <UserCheck size={9} /> : <Users size={9} />}
+                {displayRole}
               </span>
             </div>
           </div>
@@ -292,7 +298,6 @@ export function CustomerAdmin() {
     setLoading(true)
     apiFetchUsers()
       .then(data => {
-        // Show only customers by default (filter out admins from list, but keep for stats)
         setUsers(data)
       })
       .catch(() => showToast('Gagal memuat data customer.', 'error'))
@@ -307,24 +312,32 @@ export function CustomerAdmin() {
  
   async function handleDelete() {
     if (!deleteTarget) return
+    const displayName = deleteTarget.username || deleteTarget.name || 'Pengguna'
     await apiDeleteUser(deleteTarget.id)
     setUsers(p => p.filter(x => x.id !== deleteTarget.id))
-    showToast(`Akun ${deleteTarget.name} dihapus.`, 'error')
+    showToast(`Akun ${displayName} dihapus.`, 'error')
     setDeleteTarget(null)
   }
  
   const filtered = users.filter(u => {
     const q = searchQuery.toLowerCase()
-    const matchSearch =
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
-    const matchRole = filterRole === 'all' || u.role === filterRole
+    
+    // Safely parse name and email (Fixing the toLowerCase crash)
+    const displayName = (u.username || u.name || "").toLowerCase()
+    const email = (u.email || "").toLowerCase()
+    
+    const matchSearch = displayName.includes(q) || email.includes(q)
+    
+    // Normalize role from database ('user' -> 'customer')
+    const normalizedRole = u.role === 'user' ? 'customer' : u.role
+    const matchRole = filterRole === 'all' || normalizedRole === filterRole
+    
     return matchSearch && matchRole
   })
  
   const counts = {
     total:    users.length,
-    customer: users.filter(u => u.role === 'customer').length,
+    customer: users.filter(u => u.role === 'customer' || u.role === 'user').length,
     admin:    users.filter(u => u.role === 'admin').length,
   }
  
@@ -355,7 +368,7 @@ export function CustomerAdmin() {
       <div className="flex-1 flex flex-col overflow-y-auto">
  
         {/* Header */}
-        <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 mt-14 md:mt-0">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-zinc-600 hover:bg-zinc-100 rounded-lg md:hidden"><Menu size={20} /></button>
             <div className="relative hidden sm:block w-64">
@@ -439,58 +452,63 @@ export function CustomerAdmin() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                    {filtered.map(user => (
-                      <tr key={user.id} className="hover:bg-zinc-50 transition-colors group">
-                        {/* Name + avatar */}
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center font-black text-black text-xs shrink-0">
-                              {user.name.charAt(0).toUpperCase()}
+                    {filtered.map(user => {
+                      const displayName = user.username || user.name || 'Pengguna'
+                      const displayRole = user.role === 'user' ? 'customer' : user.role
+
+                      return (
+                        <tr key={user.id} className="hover:bg-zinc-50 transition-colors group">
+                          {/* Name + avatar */}
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center font-black text-black text-xs shrink-0">
+                                {displayName.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-zinc-900">{displayName}</p>
+                                <p className="text-[10px] text-zinc-400 md:hidden">{user.email}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs font-bold text-zinc-900">{user.name}</p>
-                              <p className="text-[10px] text-zinc-400 md:hidden">{user.email}</p>
+                          </td>
+                          {/* Email */}
+                          <td className="px-5 py-3.5 hidden md:table-cell">
+                            <p className="text-xs text-zinc-600">{user.email}</p>
+                          </td>
+                          {/* Phone */}
+                          <td className="px-5 py-3.5 hidden lg:table-cell">
+                            <p className="text-xs text-zinc-500">{user.phone ?? '-'}</p>
+                          </td>
+                          {/* Role badge */}
+                          <td className="px-5 py-3.5">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border ${
+                              displayRole === 'admin'
+                                ? 'bg-amber-50 text-amber-700 border-amber-100'
+                                : 'bg-zinc-50 text-zinc-500 border-zinc-200'
+                            }`}>
+                              {displayRole === 'admin' ? <UserCheck size={9} /> : <Users size={9} />}
+                              {displayRole}
+                            </span>
+                          </td>
+                          {/* Date */}
+                          <td className="px-5 py-3.5 hidden xl:table-cell">
+                            <p className="text-xs text-zinc-500">{formatDate(user.createdAt)}</p>
+                          </td>
+                          {/* Actions */}
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button onClick={() => setDetailTarget(user)}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors">
+                                <Eye size={14} />
+                              </button>
+                              <button onClick={() => setDeleteTarget(user)}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                                <Trash2 size={14} />
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        {/* Email */}
-                        <td className="px-5 py-3.5 hidden md:table-cell">
-                          <p className="text-xs text-zinc-600">{user.email}</p>
-                        </td>
-                        {/* Phone */}
-                        <td className="px-5 py-3.5 hidden lg:table-cell">
-                          <p className="text-xs text-zinc-500">{user.phone ?? '-'}</p>
-                        </td>
-                        {/* Role badge */}
-                        <td className="px-5 py-3.5">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border ${
-                            user.role === 'admin'
-                              ? 'bg-amber-50 text-amber-700 border-amber-100'
-                              : 'bg-zinc-50 text-zinc-500 border-zinc-200'
-                          }`}>
-                            {user.role === 'admin' ? <UserCheck size={9} /> : <Users size={9} />}
-                            {user.role}
-                          </span>
-                        </td>
-                        {/* Date */}
-                        <td className="px-5 py-3.5 hidden xl:table-cell">
-                          <p className="text-xs text-zinc-500">{formatDate(user.createdAt)}</p>
-                        </td>
-                        {/* Actions */}
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button onClick={() => setDetailTarget(user)}
-                              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors">
-                              <Eye size={14} />
-                            </button>
-                            <button onClick={() => setDeleteTarget(user)}
-                              className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -515,8 +533,8 @@ export function CustomerAdmin() {
             <h2 className="text-xl font-bold">Logout?</h2>
             <p className="text-slate-500 mt-2">Yakin mau logout?</p>
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowLogoutModal(false)} className="px-4 py-2 bg-slate-100 rounded-lg">Batal</button>
-              <button onClick={() => { localStorage.clear(); window.location.href = '/login' }} className="px-4 py-2 bg-red-500 text-white rounded-lg">Logout</button>
+              <button onClick={() => setShowLogoutModal(false)} className="px-4 py-2 bg-slate-100 rounded-lg text-sm font-semibold text-zinc-700 hover:bg-zinc-200">Batal</button>
+              <button onClick={() => { localStorage.clear(); window.location.href = '/login' }} className="px-4 py-2 bg-rose-500 text-white rounded-lg text-sm font-semibold hover:bg-rose-600">Logout</button>
             </div>
           </div>
         </div>

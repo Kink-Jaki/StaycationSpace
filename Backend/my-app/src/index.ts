@@ -12,6 +12,7 @@ import payments from "./routes/payments";
 import reviews from "./routes/reviews";
 import promos from "./routes/promos";
 import profile from "./routes/profile";
+import customers from "./routes/customers";
 
 
 const app = new Hono()
@@ -37,7 +38,7 @@ app.route('/reviews', reviews)
 app.route('/promos', promos)
 app.route("/analytics", analytics)
 app.route("/profile", profile)
-
+app.route("/users", customers)
 app.use("/uploads/*", serveStatic({
   root: "./",
   getContent: async (path) => {
