@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/edit')({
-  component: RouteComponent,
+  component: EditPage,
 })
 
-function RouteComponent() {
-  return <div>Hello "/edit"!</div>
+function EditPage() {
+  return <div>Hello ini halaman edit</div>
 }
