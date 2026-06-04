@@ -328,7 +328,7 @@ export function TambahSpace() {
       if (imageFile) {
         const imageForm = new FormData();
 
-        imageForm.append("file", imageFile);
+        imageForm.append("files", imageFile);
 
         const imageResponse = await fetch(
           `${API_BASE_URL}/spaces/${data.id}/images`,
