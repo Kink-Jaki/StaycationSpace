@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TambahRouteImport } from './routes/tambah'
 import { Route as Space_adminRouteImport } from './routes/space_admin'
+import { Route as PromoRouteImport } from './routes/promo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EditRouteImport } from './routes/edit'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -25,6 +26,11 @@ const TambahRoute = TambahRouteImport.update({
 const Space_adminRoute = Space_adminRouteImport.update({
   id: '/space_admin',
   path: '/space_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/edit': typeof EditRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/edit': typeof EditRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/edit': typeof EditRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/edit'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/edit'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/edit'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EditRoute: typeof EditRoute
   LoginRoute: typeof LoginRoute
+  PromoRoute: typeof PromoRoute
   Space_adminRoute: typeof Space_adminRoute
   TambahRoute: typeof TambahRoute
 }
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/space_admin'
       fullPath: '/space_admin'
       preLoaderRoute: typeof Space_adminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EditRoute: EditRoute,
   LoginRoute: LoginRoute,
+  PromoRoute: PromoRoute,
   Space_adminRoute: Space_adminRoute,
   TambahRoute: TambahRoute,
 }
