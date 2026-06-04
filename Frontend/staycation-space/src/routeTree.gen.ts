@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TambahRouteImport } from './routes/tambah'
 import { Route as Space_adminRouteImport } from './routes/space_admin'
+import { Route as PromoRouteImport } from './routes/promo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as Booking_adminRouteImport } from './routes/booking_admin'
@@ -25,6 +26,11 @@ const TambahRoute = TambahRouteImport.update({
 const Space_adminRoute = Space_adminRouteImport.update({
   id: '/space_admin',
   path: '/space_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
   '/edit/$id': typeof EditIdRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
   '/edit/$id': typeof EditIdRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/promo': typeof PromoRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
   '/edit/$id': typeof EditIdRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/booking_admin'
     | '/dashboard'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
     | '/edit/$id'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/booking_admin'
     | '/dashboard'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
     | '/edit/$id'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/booking_admin'
     | '/dashboard'
     | '/login'
+    | '/promo'
     | '/space_admin'
     | '/tambah'
     | '/edit/$id'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   Booking_adminRoute: typeof Booking_adminRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  PromoRoute: typeof PromoRoute
   Space_adminRoute: typeof Space_adminRoute
   TambahRoute: typeof TambahRoute
   EditIdRoute: typeof EditIdRoute
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/space_admin'
       fullPath: '/space_admin'
       preLoaderRoute: typeof Space_adminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   Booking_adminRoute: Booking_adminRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  PromoRoute: PromoRoute,
   Space_adminRoute: Space_adminRoute,
   TambahRoute: TambahRoute,
   EditIdRoute: EditIdRoute,

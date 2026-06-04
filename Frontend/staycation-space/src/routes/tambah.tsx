@@ -277,20 +277,9 @@ export function TambahSpace() {
 
       payload.append("address", formData.alamat);
 
-      payload.append(
-        "capacity",
-        formData.kapasitas
-      );
-
-      payload.append(
-        "pricePerHour",
-        formData.hargaDasar
-      );
-
-      payload.append(
-        "deposit",
-        formData.depositJaminan
-      );
+      payload.append("pricePerHour", String(parseFloat(formData.hargaDasar)));
+      payload.append("deposit", String(parseFloat(formData.depositJaminan)));
+      payload.append("capacity", String(parseInt(formData.kapasitas)));
 
       const response = await fetch(
         `${API_BASE_URL}/spaces`,

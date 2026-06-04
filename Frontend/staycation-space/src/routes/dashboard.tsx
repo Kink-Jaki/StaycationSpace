@@ -1,7 +1,6 @@
 
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useEffect, useState } from "react";
-
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -16,6 +15,8 @@ import {
   CheckCircle2,
   Clock3,
   DollarSign,
+  ChevronDown,
+  XCircle,
 } from "lucide-react";
 
 // ========================================
@@ -113,20 +114,16 @@ const apiFetch = async (
   return response;
 };
 
-// ========================================
-// SIDEBAR
-// ========================================
-const Sidebar: React.FC<SidebarProps> = ({
-  activeTab,
-  setActiveTab,
-  isSidebarOpen,
-  setIsSidebarOpen,
-  setShowLogoutModal,
-}) => {
-  const username = localStorage.getItem("username") || "Admin";
-
-  const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+// ─────────────────────────────────────────────
+// Sidebar
+// ─────────────────────────────────────────────
+ 
+function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: SidebarProps) {
+  const username = localStorage.getItem('username') ?? 'Admin Staycation';
+  const role = localStorage.getItem('role') ?? 'admin';
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+ 
+  const menuItems = [    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { name: "Space", icon: Building2, path: "/space_admin" },
     { name: "Booking", icon: Calendar, path: "/booking_admin" },
     { name: "Customer", icon: Users, path: "/customer" },
@@ -135,92 +132,62 @@ const Sidebar: React.FC<SidebarProps> = ({
     { name: "Report", icon: BarChart3, path: "/report" },
     { name: "Settings", icon: Settings, path: "/settings" },
   ];
-
+ 
   return (
-    <aside
-      className={`
-      fixed inset-y-0 left-0 z-40 w-64 bg-[#121212] text-zinc-300 p-5 flex flex-col justify-between transition-transform duration-300
-      md:relative md:translate-x-0 border-r border-zinc-900
-      ${
-        isSidebarOpen
-          ? "translate-x-0"
-          : "-translate-x-full md:translate-x-0"
-      }
-    `}
-    >
-      <div>
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-amber-500 rounded-lg text-black">
-            <Building2 size={20} />
+    <aside className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <div className="flex flex-col h-full justify-between">
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0"><Building2 size={20} /></div>
+              <div className="min-w-0">
+                <h5 className="font-black tracking-wide text-sm text-white truncate">STAYCATION<span className="text-amber-500">SPACE</span></h5>
+                <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">CONSOLES ADMIN</p>
+              </div>
+            </div>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-1 text-zinc-400 hover:text-white" aria-label="Tutup sidebar">
+              <XCircle size={20} />
+            </button>
           </div>
-
-          <div>
-            <h1 className="font-black text-white text-sm">
-              STAYCATION
-              <span className="text-amber-500">SPACE</span>
-            </h1>
-
-            <p className="text-[10px] text-zinc-500">
-              CONSOLES ADMIN
-            </p>
-          </div>
+          <nav className="space-y-1">
+            {menuItems.map(item => {
+              const Icon = item.icon;
+              const isActive = item.name === 'Dashboard'; 
+              return (
+                <button key={item.name} onClick={() => { window.location.href = item.path; }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10 font-bold' : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-white'}`}
+                >
+                  <Icon size={16} /><span>{item.name}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
-
-        <nav className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-
-            const isActive = activeTab === item.name;
-
-            return (
-              <button
-                key={item.name}
-                onClick={() => {
-                  if (item.name === "Dashboard") {
-                    setActiveTab("Dashboard");
-                    setIsSidebarOpen(false);
-                  } else {
-                    window.location.href = item.path;
-                  }
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all ${
-                  isActive
-                    ? "bg-amber-500 text-black"
-                    : "hover:bg-zinc-800 text-zinc-400 hover:text-white"
-                }`}
-              >
-                <Icon size={18} />
-                {item.name}
+        <div className="pt-4 border-t border-zinc-800/50 mt-auto relative">
+          {showProfileMenu && (
+            <div className="absolute bottom-16 left-0 w-full bg-[#1e1e1e] border border-zinc-800/80 rounded-xl p-1.5 shadow-xl z-50">
+              <button onClick={() => { setShowProfileMenu(false); setShowLogoutModal(true); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/40 transition-colors text-sm font-medium">
+                <LogOut size={16} className="text-zinc-500 shrink-0" /><span>Logout</span>
               </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="border-t border-zinc-800 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm text-white font-semibold">
-              {username}
-            </h3>
-
-            <p className="text-[10px] text-amber-500 uppercase">
-              ADMIN
-            </p>
-          </div>
-
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className="p-2 hover:bg-zinc-800 rounded-lg"
-          >
-            <LogOut size={16} />
+            </div>
+          )}
+          <button onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-full flex items-center justify-between p-2.5 bg-zinc-900/60 hover:bg-zinc-800/40 transition-all rounded-xl border border-zinc-800/30 text-left">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-bold text-black text-xs shrink-0">{username.charAt(0).toUpperCase()}</div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-white truncate">{username}</h4>
+                <p className="text-[9px] text-amber-500 font-extrabold tracking-wider uppercase">{role.toUpperCase()}</p>
+              </div>
+            </div>
+            <ChevronDown size={14} className={`transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>
     </aside>
   );
-};
-
+}
 // ========================================
 // ROUTE
 // ========================================
