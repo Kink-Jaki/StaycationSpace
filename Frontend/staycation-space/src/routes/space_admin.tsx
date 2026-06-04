@@ -262,7 +262,7 @@ export default function Space() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => (window.location.href = `/edit`)}
+                      <button onClick={() => (window.location.href = `/edit/${space.id}`)}
                         className="p-2 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors">
                         <Edit2 size={15} />
                       </button>

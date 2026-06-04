@@ -220,4 +220,18 @@ app.post(
   }
 );
 
+// =========================
+// GET IMAGES BY SPACE ID
+// =========================
+app.get("/:id/images", async (c) => {
+  const spaceId = Number(c.req.param("id"));
+
+  const images = await db
+    .select()
+    .from(spaceImages)
+    .where(eq(spaceImages.spaceId, spaceId));
+
+  return c.json(images);
+});
+
 export default app;

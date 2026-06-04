@@ -12,10 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TambahRouteImport } from './routes/tambah'
 import { Route as Space_adminRouteImport } from './routes/space_admin'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as EditRouteImport } from './routes/edit'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as Booking_adminRouteImport } from './routes/booking_admin'
 import { Route as BerandaRouteImport } from './routes/beranda'
+import { Route as EditIdRouteImport } from './routes/edit.$id'
 
 const TambahRoute = TambahRouteImport.update({
   id: '/tambah',
@@ -30,11 +30,6 @@ const Space_adminRoute = Space_adminRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EditRoute = EditRouteImport.update({
-  id: '/edit',
-  path: '/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -52,34 +47,39 @@ const BerandaRoute = BerandaRouteImport.update({
   path: '/beranda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditIdRoute = EditIdRouteImport.update({
+  id: '/edit/$id',
+  path: '/edit/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
-  '/edit': typeof EditRoute
   '/login': typeof LoginRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
+  '/edit/$id': typeof EditIdRoute
 }
 export interface FileRoutesByTo {
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
-  '/edit': typeof EditRoute
   '/login': typeof LoginRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
+  '/edit/$id': typeof EditIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
   '/dashboard': typeof DashboardRoute
-  '/edit': typeof EditRoute
   '/login': typeof LoginRoute
   '/space_admin': typeof Space_adminRoute
   '/tambah': typeof TambahRoute
+  '/edit/$id': typeof EditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,38 +87,38 @@ export interface FileRouteTypes {
     | '/beranda'
     | '/booking_admin'
     | '/dashboard'
-    | '/edit'
     | '/login'
     | '/space_admin'
     | '/tambah'
+    | '/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/beranda'
     | '/booking_admin'
     | '/dashboard'
-    | '/edit'
     | '/login'
     | '/space_admin'
     | '/tambah'
+    | '/edit/$id'
   id:
     | '__root__'
     | '/beranda'
     | '/booking_admin'
     | '/dashboard'
-    | '/edit'
     | '/login'
     | '/space_admin'
     | '/tambah'
+    | '/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   BerandaRoute: typeof BerandaRoute
   Booking_adminRoute: typeof Booking_adminRoute
   DashboardRoute: typeof DashboardRoute
-  EditRoute: typeof EditRoute
   LoginRoute: typeof LoginRoute
   Space_adminRoute: typeof Space_adminRoute
   TambahRoute: typeof TambahRoute
+  EditIdRoute: typeof EditIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,13 +144,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/edit': {
-      id: '/edit'
-      path: '/edit'
-      fullPath: '/edit'
-      preLoaderRoute: typeof EditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -172,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BerandaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edit/$id': {
+      id: '/edit/$id'
+      path: '/edit/$id'
+      fullPath: '/edit/$id'
+      preLoaderRoute: typeof EditIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -179,10 +179,10 @@ const rootRouteChildren: RootRouteChildren = {
   BerandaRoute: BerandaRoute,
   Booking_adminRoute: Booking_adminRoute,
   DashboardRoute: DashboardRoute,
-  EditRoute: EditRoute,
   LoginRoute: LoginRoute,
   Space_adminRoute: Space_adminRoute,
   TambahRoute: TambahRoute,
+  EditIdRoute: EditIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
