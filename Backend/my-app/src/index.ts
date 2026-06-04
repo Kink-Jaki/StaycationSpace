@@ -13,6 +13,7 @@ import reviews from "./routes/reviews";
 import promos from "./routes/promos";
 import profile from "./routes/profile";
 import customers from "./routes/customers";
+import report from "./routes/report";
 
 
 const app = new Hono()
@@ -22,7 +23,7 @@ app.use(
   cors({
     origin: "*",
     allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   })
 );
 
@@ -39,6 +40,7 @@ app.route('/promos', promos)
 app.route("/analytics", analytics)
 app.route("/profile", profile)
 app.route("/users", customers)
+app.route("/reports", report)
 app.use("/uploads/*", serveStatic({
   root: "./",
   getContent: async (path) => {
