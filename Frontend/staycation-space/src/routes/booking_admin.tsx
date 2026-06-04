@@ -625,7 +625,7 @@ function BookingCalendar({
 // Sidebar
 // ─────────────────────────────────────────────
  
-function Sidebar({ isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: {
+function Sidebar({ isSidebarOpen, setIsSidebarOpen: _setIsSidebarOpen, setShowLogoutModal }: {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (v: boolean) => void;
   setShowLogoutModal: (v: boolean) => void;

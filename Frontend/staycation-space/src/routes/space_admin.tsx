@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -15,7 +15,6 @@ import {
   ChevronDown,
   MapPin,
   ImageOff,
-  XCircle,
   Loader2,
 } from "lucide-react";
  
@@ -36,7 +35,6 @@ interface Space {
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar({
   isSidebarOpen,
-  setIsSidebarOpen,
   setShowLogoutModal,
 }: {
   isSidebarOpen: boolean;

@@ -423,7 +423,7 @@ function PromoCard({ promo, onEdit, onDelete, onToggle }: {
 // Sidebar — dari dashboard.tsx
 // ─────────────────────────────────────────────
  
-function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: SidebarProps) {
+function Sidebar({ activeTab, isSidebarOpen, setShowLogoutModal }: SidebarProps) {
   const username = localStorage.getItem('username') ?? 'Admin Staycation'
   const role = localStorage.getItem('role') ?? 'admin'
   const [showProfileMenu, setShowProfileMenu] = useState(false)

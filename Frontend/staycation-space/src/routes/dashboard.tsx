@@ -15,7 +15,6 @@ import {
   Clock3,
   DollarSign,
   ChevronDown,
-  XCircle,
   Star,
 } from "lucide-react";
 
@@ -140,9 +139,9 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, set
           <nav className="space-y-1">
             {menuItems.map(item => {
               const Icon = item.icon;
-              const isActive = item.name === 'Dashboard'; 
+              const isActive = item.name === activeTab;
               return (
-                <button key={item.name} onClick={() => { window.location.href = item.path; }}
+                <button key={item.name} onClick={() => { setActiveTab(item.name); setIsSidebarOpen(false); window.location.href = item.path; }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10 font-bold' : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-white'}`}
                 >
                   <Icon size={16} /><span>{item.name}</span>
