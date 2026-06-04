@@ -316,50 +316,10 @@ export function TambahSpace() {
       console.log("SPACE:", data);
 
       if (!response.ok) {
-        throw new Error(
-          data.message || "Gagal membuat space"
-        );
+        throw new Error(JSON.stringify(data));
       }
 
-      // =========================
-      // UPLOAD IMAGE
-      // =========================
-
-      if (imageFile) {
-        const imageForm = new FormData();
-
-        imageForm.append("files", imageFile);
-
-        const imageResponse = await fetch(
-          `${API_BASE_URL}/spaces/${data.id}/images`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: imageForm,
-          }
-        );
-
-        const imageText =
-          await imageResponse.text();
-
-        let imageData;
-
-        try {
-          imageData = JSON.parse(imageText);
-        } catch {
-          imageData = { message: imageText };
-        }
-
-        console.log("IMAGE:", imageData);
-
-        if (!imageResponse.ok) {
-          throw new Error("Upload gambar gagal");
-        }
-      }
-
-      alert("Space berhasil dibuat");
+      alert("Data berhasil ditambahkan");
 
       window.location.href = "/space_admin";
     } catch (error) {
