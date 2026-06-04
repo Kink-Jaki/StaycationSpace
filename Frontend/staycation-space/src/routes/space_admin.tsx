@@ -8,7 +8,6 @@ import {
   Users,
   LogOut,
   Settings,
-  Star,
   Percent,
   Plus,
   Edit2,
@@ -53,7 +52,6 @@ function Sidebar({
     { name: "Space",     icon: Building2,       path: "/space_admin" },
     { name: "Booking",   icon: Calendar,        path: "/booking_admin" },
     { name: "Customer",  icon: Users,           path: "/customer" },
-    { name: "Review",    icon: Star,            path: "/review" },
     { name: "Promo",     icon: Percent,         path: "/promo" },
     { name: "Report",    icon: BarChart3,       path: "/report" },
     { name: "Settings",  icon: Settings,        path: "/settings" },
@@ -67,27 +65,6 @@ function Sidebar({
     >
       <div className="flex flex-col h-full justify-between">
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0">
-                <Building2 size={20} />
-              </div>
-              <div className="min-w-0">
-                <h5 className="font-black tracking-wide text-sm text-white truncate">
-                  STAYCATION<span className="text-amber-500">SPACE</span>
-                </h5>
-                <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">
-                  CONSOLES ADMIN
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="md:hidden p-1 text-zinc-400 hover:text-white"
-            >
-              <XCircle size={20} />
-            </button>
-          </div>
  
           <nav className="space-y-1">
             {menuItems.map((item) => {

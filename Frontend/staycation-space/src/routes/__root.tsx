@@ -3,7 +3,7 @@ import { Building2, Search, Bell, User } from 'lucide-react'
 
 const Navbar = () => (
   <nav className="bg-[#121212] border-b border-zinc-800 text-white w-full sticky top-0 z-50">
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className=" mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between h-16">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-amber-500 rounded-lg text-black">

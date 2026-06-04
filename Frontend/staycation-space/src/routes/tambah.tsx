@@ -5,11 +5,9 @@ import {
   Building2,
   BarChart3,
   Calendar,
-  CreditCard,
   Users,
   LogOut,
   Settings,
-  Star,
   Percent,
   ArrowLeft,
   ChevronDown,
@@ -54,16 +52,6 @@ const Sidebar = ({
       name: "Customer",
       icon: Users,
       path: "/customer",
-    },
-    {
-      name: "Payment",
-      icon: CreditCard,
-      path: "/payment",
-    },
-    {
-      name: "Review",
-      icon: Star,
-      path: "/review",
     },
     {
       name: "Promo",

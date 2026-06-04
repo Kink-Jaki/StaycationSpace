@@ -8,7 +8,6 @@ import {
   Users,
   LogOut,
   Settings,
-  Star,
   Percent,
   Menu,
   BarChart3,
@@ -17,6 +16,7 @@ import {
   DollarSign,
   ChevronDown,
   XCircle,
+  Star,
 } from "lucide-react";
 
 // ========================================
@@ -127,7 +127,6 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, set
     { name: "Space", icon: Building2, path: "/space_admin" },
     { name: "Booking", icon: Calendar, path: "/booking_admin" },
     { name: "Customer", icon: Users, path: "/customer" },
-    { name: "Review", icon: Star, path: "/review" },
     { name: "Promo", icon: Percent, path: "/promo" },
     { name: "Report", icon: BarChart3, path: "/report" },
     { name: "Settings", icon: Settings, path: "/settings" },
@@ -137,18 +136,7 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, set
     <aside className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex flex-col h-full justify-between">
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-amber-500 rounded-lg text-black shrink-0"><Building2 size={20} /></div>
-              <div className="min-w-0">
-                <h5 className="font-black tracking-wide text-sm text-white truncate">STAYCATION<span className="text-amber-500">SPACE</span></h5>
-                <p className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase -mt-0.5">CONSOLES ADMIN</p>
-              </div>
-            </div>
-            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-1 text-zinc-400 hover:text-white" aria-label="Tutup sidebar">
-              <XCircle size={20} />
-            </button>
-          </div>
+          
           <nav className="space-y-1">
             {menuItems.map(item => {
               const Icon = item.icon;
