@@ -16,6 +16,7 @@ import {
   MapPin,
   ImageOff,
   Loader2,
+  Search,
 } from "lucide-react";
  
 const API_BASE_URL = "http://192.168.111.189:3000";
@@ -139,7 +140,7 @@ export default function Space() {
   const [imageMap, setImageMap] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
  
-  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("all");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
  
@@ -200,17 +201,10 @@ export default function Space() {
     other: "Lainnya",
   };
  
-  const filters = ["all", "studio", "villa", "hall", "other"];
-  const filterLabels: Record<string, string> = {
-    all: "Semua",
-    studio: "Studio Foto",
-    villa: "Villa",
-    hall: "Coworking Space",
-    other: "Lainnya",
-  };
- 
-  const filtered =
-    filter === "all" ? spaces : spaces.filter((s) => s.type === filter);
+  
+  const filtered = spaces.filter((space) =>
+  space.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
  
   const activeCount = spaces.filter((s) => s.status === "active").length;
   const inactiveCount = spaces.filter((s) => s.status === "inactive").length;
@@ -257,22 +251,21 @@ export default function Space() {
           ))}
         </div>
  
-        {/* Filters */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                filter === f
-                  ? "bg-zinc-900 text-white border-zinc-900"
-                  : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700"
-              }`}
-            >
-              {filterLabels[f]}
-            </button>
-          ))}
-        </div>
+        {/* Search */}
+        <div className="mb-6 relative w-full lg:w-96">
+  <Search
+    size={18}
+    className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+  />
+
+  <input
+    type="text"
+    placeholder="Cari nama space..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+  />
+</div>
  
         {/* Grid */}
         {loading ? (
