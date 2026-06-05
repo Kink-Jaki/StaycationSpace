@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate} from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
 import { 
-  Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail
+  Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, User as UserIcon, AlertCircle, Sparkles
 } from 'lucide-react';
 
 const API_BASE_URL = "http://192.168.111.189:3000";
@@ -18,11 +18,87 @@ interface Space {
   status: string;
 }
 
+// Interface tambahan untuk memetakan input promo di form
+interface Promo {
+  id: number;
+  code: string;
+  type: 'percent' | 'fixed';
+  value: string;
+  description: string;
+}
+
+const FALLBACK_SPACES: Space[] = [
+  {
+    id: 101,
+    name: 'Studio Santai',
+    type: 'studio',
+    description: 'Studio nyaman untuk produksi konten dan rapat kreatif.',
+    pricePerHour: '120000',
+    deposit: '50000',
+    capacity: 6,
+    address: 'Jalan Sudirman No. 20, Jakarta',
+    status: 'active',
+  },
+  {
+    id: 102,
+    name: 'Villa Serene',
+    type: 'villa',
+    description: 'Villa eksklusif dengan kolam renang pribadi untuk acara santai.',
+    pricePerHour: '350000',
+    deposit: '150000',
+    capacity: 15,
+    address: 'Jalan Puncak Indah No. 5, Bogor',
+    status: 'active',
+  },
+  {
+    id: 103,
+    name: 'Hall Megah',
+    type: 'hall',
+    description: 'Ruang serbaguna luas untuk seminar, workshop, dan pertemuan besar.',
+    pricePerHour: '500000',
+    deposit: '200000',
+    capacity: 80,
+    address: 'Jalan Merdeka No. 10, Bandung',
+    status: 'active',
+  }
+];
+
+const AVAILABLE_PROMOS: Promo[] = [
+  {
+    id: 1,
+    code: 'STAYNEW',
+    type: 'percent',
+    value: '10',
+    description: 'Potongan 10% untuk transaksi pertama'
+  }
+];
+
 export const Route = createFileRoute('/beranda')({
+
+  beforeLoad: () => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // Belum login
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    // Bukan admin
+    if (role !== "user") {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+
     component: Beranda,
-  });
+});
 
 export default function Beranda() {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -39,46 +115,58 @@ export default function Beranda() {
   const [properties, setProperties] = useState<Space[]>([]);
   const [imageMap, setImageMap] = useState<Record<number, string>>({});
 
+  // State baru untuk penanganan modal "Pesan Sekarang"
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Space | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Form Booking State yang diselaraskan dengan Schema POST /bookings
+  const [bookingForm, setBookingForm] = useState({
+    userId: 1, // Default mock user ID, akan divalidasi oleh authMiddleware di backend
+    startTimeDate: '', // Input tanggal mulai
+    startTimeHour: '09:00', // Input jam mulai
+    duration: 1, // Durasi dalam jam
+    promoId: '', // Pilihan Promo ID (opsional)
+    notes: '' // Catatan khusus pemesanan
+  });
+
   useEffect(() => {
     fetchSpaces();
   }, []);
 
   const fetchSpaces = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/spaces`);
-    const data: Space[] = await response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}/spaces`);
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data dari API, beralih ke data cadangan.");
+      }
+      const data: Space[] = await response.json();
+      setProperties(data);
 
-    setProperties(data);
-
-    const imgs: Record<number, string> = {};
-
-    await Promise.all(
-      data.map(async (space) => {
-        try {
-          const res = await fetch(
-            `${API_BASE_URL}/spaces/${space.id}/images`
-          );
-
-          const imageData = await res.json();
-
-          if (
-            Array.isArray(imageData) &&
-            imageData.length > 0
-          ) {
-            imgs[space.id] =
-              `${API_BASE_URL}${imageData[0].imageUrl}`;
+      const imgs: Record<number, string> = {};
+      await Promise.all(
+        data.map(async (space) => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/spaces/${space.id}/images`);
+            if (res.ok) {
+              const imageData = await res.json();
+              if (Array.isArray(imageData) && imageData.length > 0) {
+                imgs[space.id] = `${API_BASE_URL}${imageData[0].imageUrl}`;
+              }
+            }
+          } catch (err) {
+            console.error("Gagal memuat gambar untuk space " + space.id, err);
           }
-        } catch (err) {
-          console.error(err);
-        }
-      })
-    );
-
-    setImageMap(imgs);
-  } catch (error) {
-    console.error(error);
-  }
-};
+        })
+      );
+      setImageMap(imgs);
+    } catch (error) {
+      console.warn("Menggunakan data cadangan karena kendala koneksi API:", error);
+      setProperties(FALLBACK_SPACES);
+    }
+  };
 
   // Mendapatkan label teks yang ramah pengguna dari kunci enum
   const getCategoryLabel = (typeKey: string) => {
@@ -101,6 +189,91 @@ export default function Beranda() {
 
     return matchesCategory && matchesSearch;
   });
+
+  // Handler membuka modal pemesanan
+  const handleOpenBooking = (property: Space) => {
+    navigate({
+      to: "/booking_user",
+      search: {
+        spaceId: property.id,
+      },
+    });
+  };
+
+  // Menghitung Estimasi Harga di Sisi Klien (termasuk promo)
+  const calculateEstimatedPrice = () => {
+    if (!selectedProperty) return 0;
+    
+    let basePrice = Number(selectedProperty.pricePerHour) * bookingForm.duration;
+    
+    if (bookingForm.promoId) {
+      const activePromo = AVAILABLE_PROMOS.find(p => p.id === Number(bookingForm.promoId));
+      if (activePromo) {
+        if (activePromo.type === 'percent') {
+          basePrice = basePrice - (basePrice * Number(activePromo.value)) / 100;
+        } else if (activePromo.type === 'fixed') {
+          basePrice = basePrice - Number(activePromo.value);
+        }
+      }
+    }
+    return Math.max(0, basePrice);
+  };
+
+  // Handler submit pemesanan ke POST /bookings di Backend Hono
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProperty) return;
+
+    setIsLoading(true);
+    setBookingError(null);
+
+    // Hitung waktu mulai & selesai berdasarkan durasi jam pilihan
+    const startDateTimeStr = `${bookingForm.startTimeDate}T${bookingForm.startTimeHour}:00`;
+    const startTimeDateObj = new Date(startDateTimeStr);
+    
+    const endTimeDateObj = new Date(startTimeDateObj.getTime() + (bookingForm.duration * 60 * 60 * 1000));
+
+    // Siapkan body payload sesuai backend
+    const payload = {
+      spaceId: selectedProperty.id,
+      userId: bookingForm.userId,
+      promoId: bookingForm.promoId ? Number(bookingForm.promoId) : null,
+      startTime: startTimeDateObj.toISOString(),
+      endTime: endTimeDateObj.toISOString(),
+      notes: bookingForm.notes
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Menambahkan token dummy jika backend membutuhkan authMiddleware
+          'Authorization': 'Bearer dummy-token-for-preview'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal membuat reservasi.");
+      }
+
+      setBookingSuccess(true);
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setSelectedProperty(null);
+        setBookingSuccess(false);
+      }, 2500);
+
+    } catch (err: any) {
+      console.error(err);
+      setBookingError(err.message || "Terjadi kesalahan koneksi server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col">
@@ -187,10 +360,8 @@ export default function Beranda() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-100">
-                      <span className="text-zinc-400 text-sm">
-                        Belum ada foto
-                      </span>
+                    <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                      <Building2 size={48} className="text-gray-400" />
                     </div>
                   )}
                   <div className="absolute top-4 left-4">
@@ -199,7 +370,7 @@ export default function Beranda() {
                     </span>
                   </div>
                   <div className="absolute top-4 right-4">
-                    <span className="bg-black/70 text-white text-xs px-3 py-1 rounded-full">
+                    <span className="bg-black/70 text-white text-xs px-3 py-1 rounded-full font-bold">
                       {property.capacity} Orang
                     </span>
                   </div>
@@ -227,7 +398,10 @@ export default function Beranda() {
                         Rp {Number(property.pricePerHour).toLocaleString("id-ID")} <span className="text-xs font-normal text-gray-500">/ jam</span>
                       </p>
                     </div>
-                    <button className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors">
+                    <button 
+                      onClick={() => handleOpenBooking(property)}
+                      className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors cursor-pointer"
+                    >
                       PESAN SEKARANG
                       <ArrowRight size={16} />
                     </button>
@@ -315,6 +489,201 @@ export default function Beranda() {
           </div>
         </div>
       </footer>
+
+      {/* MODAL: PESAN SEKARANG (FORMULIR RESERVASI) */}
+      {isModalOpen && selectedProperty && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] w-full max-w-lg overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]">
+            
+            {/* Header Modal */}
+            <div className="p-6 bg-[#121212] text-white flex justify-between items-center">
+              <div>
+                <span className="text-xs font-bold text-[#F59E0B] tracking-wider uppercase">{selectedProperty.type}</span>
+                <h3 className="font-bold text-lg mt-0.5 leading-snug">Konfirmasi Reservasi</h3>
+              </div>
+              <button 
+                onClick={() => { setIsModalOpen(false); setSelectedProperty(null); }}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Info Singkat Tempat */}
+            <div className="bg-amber-50/50 px-6 py-4 border-b border-amber-100/60 flex justify-between items-center text-sm">
+              <div>
+                <p className="font-bold text-gray-900">{selectedProperty.name}</p>
+                <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1">
+                  <MapPin size={12} className="text-gray-400" /> {selectedProperty.address}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-gray-400">HARGA SEWA</p>
+                <p className="font-extrabold text-amber-700">
+                  Rp {Number(selectedProperty.pricePerHour).toLocaleString("id-ID")} <span className="text-xs font-normal text-gray-500">/ jam</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Konten Formulir */}
+            {bookingSuccess ? (
+              <div className="p-8 text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                  <Check size={32} strokeWidth={3} />
+                </div>
+                <h4 className="font-bold text-xl text-gray-900 mb-2">Booking Berhasil!</h4>
+                <p className="text-gray-500 text-sm max-w-xs leading-relaxed">
+                  Terima kasih, formulir reservasi Anda berhasil terdaftar ke database backend.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleBookingSubmit} className="p-6 space-y-4 overflow-y-auto">
+                
+                {/* Tampilan Pesan Error jika jadwal bentrok */}
+                {bookingError && (
+                  <div className="p-3 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-2.5 text-xs text-red-600">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                    <span>{bookingError}</span>
+                  </div>
+                )}
+
+                {/* Input User ID - Diperlukan oleh Backend Schema */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">User ID Pemesan</label>
+                  <div className="relative">
+                    <UserIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="number" 
+                      required
+                      placeholder="Masukkan ID Pengguna Anda"
+                      className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
+                      value={bookingForm.userId}
+                      onChange={(e) => setBookingForm({ ...bookingForm, userId: Number(e.target.value) || 1 })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Tanggal Sewa</label>
+                    <div className="relative">
+                      <Calendar size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type="date" 
+                        required
+                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
+                        value={bookingForm.startTimeDate}
+                        onChange={(e) => setBookingForm({ ...bookingForm, startTimeDate: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Waktu Mulai</label>
+                    <div className="relative">
+                      <Clock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type="time" 
+                        required
+                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
+                        value={bookingForm.startTimeHour}
+                        onChange={(e) => setBookingForm({ ...bookingForm, startTimeHour: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Durasi Sewa</label>
+                    <div className="relative">
+                      <Clock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type="number" 
+                        min={1}
+                        required
+                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
+                        value={bookingForm.duration}
+                        onChange={(e) => setBookingForm({ ...bookingForm, duration: parseInt(e.target.value) || 1 })}
+                      />
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                        Jam
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Input Pilihan Kupon Diskon Aktif */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Kupon Promo (Pilihan)</label>
+                    <div className="relative">
+                      <Sparkles size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <select 
+                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50 appearance-none"
+                        value={bookingForm.promoId}
+                        onChange={(e) => setBookingForm({ ...bookingForm, promoId: e.target.value })}
+                      >
+                        <option value="">Tanpa Promo</option>
+                        {AVAILABLE_PROMOS.map((promo) => (
+                          <option key={promo.id} value={promo.id}>
+                            {promo.code} ({promo.type === 'percent' ? `${promo.value}%` : `-Rp ${Number(promo.value).toLocaleString()}`})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Input Catatan (Notes) */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Catatan Tambahan (Notes)</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Contoh: Kebutuhan tambahan meja, stand mic, dll."
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50 resize-none"
+                    value={bookingForm.notes}
+                    onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                  />
+                </div>
+
+                {/* Total Bayar Preview */}
+                <div className="mt-6 p-4 rounded-2xl bg-[#FAF8F5] border border-amber-100/50 flex justify-between items-center">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400">ESTIMASI TOTAL BAYAR</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      ({bookingForm.duration} jam x Rp {Number(selectedProperty.pricePerHour).toLocaleString("id-ID")})
+                      {bookingForm.promoId && <span className="text-emerald-600 block text-[10px] font-bold">Promo Kupon Diterapkan</span>}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-black text-xl text-gray-950">
+                      Rp {calculateEstimatedPrice().toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="pt-2 flex gap-3">
+                  <button 
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => { setIsModalOpen(false); setSelectedProperty(null); }}
+                    className="flex-1 border border-gray-200 text-gray-600 font-bold py-3 rounded-full text-sm hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-55"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-3 rounded-full text-sm shadow-md transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-55"
+                  >
+                    {isLoading ? "Mengirim..." : "Kirim Reservasi"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

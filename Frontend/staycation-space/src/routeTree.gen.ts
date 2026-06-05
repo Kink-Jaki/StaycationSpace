@@ -17,6 +17,7 @@ import { Route as PromoRouteImport } from './routes/promo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CustomerRouteImport } from './routes/customer'
+import { Route as Booking_userRouteImport } from './routes/booking_user'
 import { Route as Booking_adminRouteImport } from './routes/booking_admin'
 import { Route as BerandaRouteImport } from './routes/beranda'
 import { Route as EditIdRouteImport } from './routes/edit.$id'
@@ -61,6 +62,11 @@ const CustomerRoute = CustomerRouteImport.update({
   path: '/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Booking_userRoute = Booking_userRouteImport.update({
+  id: '/booking_user',
+  path: '/booking_user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Booking_adminRoute = Booking_adminRouteImport.update({
   id: '/booking_admin',
   path: '/booking_admin',
@@ -80,6 +86,7 @@ const EditIdRoute = EditIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
+  '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
+  '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/beranda': typeof BerandaRoute
   '/booking_admin': typeof Booking_adminRoute
+  '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/beranda'
     | '/booking_admin'
+    | '/booking_user'
     | '/customer'
     | '/dashboard'
     | '/login'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/beranda'
     | '/booking_admin'
+    | '/booking_user'
     | '/customer'
     | '/dashboard'
     | '/login'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/beranda'
     | '/booking_admin'
+    | '/booking_user'
     | '/customer'
     | '/dashboard'
     | '/login'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   BerandaRoute: typeof BerandaRoute
   Booking_adminRoute: typeof Booking_adminRoute
+  Booking_userRoute: typeof Booking_userRoute
   CustomerRoute: typeof CustomerRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/booking_user': {
+      id: '/booking_user'
+      path: '/booking_user'
+      fullPath: '/booking_user'
+      preLoaderRoute: typeof Booking_userRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking_admin': {
       id: '/booking_admin'
       path: '/booking_admin'
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   BerandaRoute: BerandaRoute,
   Booking_adminRoute: Booking_adminRoute,
+  Booking_userRoute: Booking_userRoute,
   CustomerRoute: CustomerRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,

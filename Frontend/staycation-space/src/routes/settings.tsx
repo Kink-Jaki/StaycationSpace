@@ -152,22 +152,10 @@ export default function Settings() {
 
       const updateUser = await res.json()
 
-      localStorage.setItem(
-        'username', 
-        profile.username
-      )
-      localStorage.setItem(
-        'email', 
-        profile.email
-      )
-      localStorage.setItem(
-        'phone', 
-        profile.phone
-      )
-      localStorage.setItem(
-        'address', 
-        profile.address
-      )
+      localStorage.setItem('username', updateUser.username || profile.username)
+      localStorage.setItem('email', updateUser.email || profile.email)
+      localStorage.setItem('phone', updateUser.phone || profile.phone)
+      localStorage.setItem('address', updateUser.address || profile.address)
       alert('Profile berhasil diperbarui!')
     } catch (err) {
       console.error('Gagal memperbarui profile', err)
