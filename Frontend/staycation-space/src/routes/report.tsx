@@ -51,7 +51,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-let detectedApiUrl = 'http://192.168.111.152:3000'
+let detectedApiUrl = 'http://192.168.111.189:3000'
 try {
   const metaEnv = (import.meta as any)?.env
   if (metaEnv && metaEnv.VITE_API_URL) {

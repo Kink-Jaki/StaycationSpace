@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 // URL Backend API disesuaikan agar langsung menuju ke alamat dasar tanpa /api
-const API_BASE_URL = "http://192.168.111.152:3000";
+const API_BASE_URL = "http://192.168.111.189:3000";
 
 // Definisi tipe data untuk Notifikasi agar aman dari error TypeScript
 interface AppNotification {
