@@ -135,7 +135,7 @@ export const Route = createFileRoute("/space_admin")({
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
-    // Belum login
+    // Belum loginA
     if (!token) {
       throw redirect({
         to: "/login",
@@ -162,7 +162,7 @@ export default function Space() {
   const [imageMap, setImageMap] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
  
-  const [searchTerm, setSearchTerm] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
  
