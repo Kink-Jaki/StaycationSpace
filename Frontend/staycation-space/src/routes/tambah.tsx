@@ -247,15 +247,15 @@ export function TambahSpace() {
 
       payload.append(
         "type",
-        formData.kategori === "studio_foto"
+        formData.kategori === "studio"
           ? "studio"
-          : formData.kategori === "studio_musik"
-          ? "studio"
+          : formData.kategori === "hall"
+          ? "hall"
           : formData.kategori === "villa"
           ? "villa"
-          : formData.kategori === "coworking"
-          ? "hall"
-          : "other"
+          : formData.kategori === "other"
+          ? "other" 
+          : "other"  
       );
 
       payload.append(
@@ -418,20 +418,20 @@ export function TambahSpace() {
                         Pilih kategori
                       </option>
 
-                      <option value="studio_foto">
-                        Studio Foto
+                      <option value="studio">
+                        Studio 
                       </option>
 
-                      <option value="studio_musik">
-                        Studio Musik
+                      <option value="hall">
+                        hall
                       </option>
 
                       <option value="villa">
                         Villa
                       </option>
 
-                      <option value="coworking">
-                        Coworking Space
+                      <option value="other">
+                        Lainnya
                       </option>
                     </select>
                   </div>
