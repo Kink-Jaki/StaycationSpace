@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { db } from "../db";
 import { bookings } from "../db/schema/bookings";
-import { spaces } from "../db/schema/spaces";
 import { promos } from "../db/schema/promos";
-import { eq, and, lt, gt, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
-import { adminOnly } from "../middleware/role";
 
 
 const app = new Hono();
