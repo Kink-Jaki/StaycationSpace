@@ -8,7 +8,7 @@ import {
 
 const BASE_URL =
   (import.meta as any)?.env?.VITE_API_URL ||
-  'http://192.168.111.152:3000'
+  'http://192.168.111.189:3000'
 
 // Komponen Sidebar yang disamakan dengan Report.tsx
 function Sidebar({ activeTab, isSidebarOpen, setShowLogoutModal }: any) {

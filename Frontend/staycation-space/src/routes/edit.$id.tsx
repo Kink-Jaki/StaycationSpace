@@ -19,7 +19,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const API_BASE_URL = "http://192.168.111.152:3000";
+const API_BASE_URL = "http://192.168.111.189:3000";
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 const Sidebar = ({ isSidebarOpen, setShowLogoutModal }: any) => {
