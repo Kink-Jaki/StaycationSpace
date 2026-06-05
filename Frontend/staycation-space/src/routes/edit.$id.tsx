@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
@@ -109,6 +109,26 @@ const Toast = ({ type, message, onClose }: { type: 'success' | 'error'; message:
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 export const Route = createFileRoute('/edit/$id')({
+
+  beforeLoad: () => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // Belum login
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    // Bukan admin
+    if (role !== "admin") {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+  
   component: EditSpace,
 });
 

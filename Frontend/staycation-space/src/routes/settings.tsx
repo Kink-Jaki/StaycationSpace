@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Building2, BarChart3, Calendar as CalendarIcon,
@@ -81,6 +81,26 @@ function authHeaders(): HeadersInit {
 }
 
 export const Route = createFileRoute('/settings')({
+
+  beforeLoad: () => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // Belum login
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    // Bukan admin
+    if (role !== "admin") {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+  
     component: Settings,
 });
 

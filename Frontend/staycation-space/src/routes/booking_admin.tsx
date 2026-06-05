@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard,
@@ -694,6 +694,26 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen: _setIsSidebarOpen, setShowLo
 // ─────────────────────────────────────────────
  
 export const Route = createFileRoute('/booking_admin')({
+
+  beforeLoad: () => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    // Belum login
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+
+    // Bukan admin
+    if (role !== "admin") {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+  
   component: BookingAdmin,
 });
  
