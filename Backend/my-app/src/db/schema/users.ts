@@ -28,11 +28,17 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 })
     .notNull(),
 
+    address: varchar("address", { length: 255 }),
+
+    phone: varchar("phone", { length: 20 }),
+
   role: roleEnum("role")
     .notNull()
     .default("user"),
 
   createdAt: timestamp("created_at")
     .defaultNow(),
+
+  updatedAt: timestamp("updated_at")
 });
 

@@ -145,4 +145,80 @@ app.delete("/:id/images", authMiddleware, adminOnly, async (c) => {
   return c.json({ message: "Semua gambar telah dihapus dari server" });
 });
 
+app.put("/:id/images", authMiddleware, adminOnly, async (c) => {
+  const spaceId = Number(c.req.param("id"));
+
+  // cek space ada atau tidak
+  const space = await db
+    .select()
+    .from(spaces)
+    .where(eq(spaces.id, spaceId));
+
+  if (!space.length) {
+    return c.json({ message: "Space tidak ditemukan" }, 404);
+  }
+
+  const form = await c.req.formData();
+  const files = form.getAll("files") as File[];
+
+  if (!files.length) {
+    return c.json({ message: "Tidak ada file yang diupload" }, 400);
+  }
+
+  // =========================
+  // HAPUS GAMBAR LAMA
+  // =========================
+
+  const oldImages = await db
+    .select()
+    .from(spaceImages)
+    .where(eq(spaceImages.spaceId, spaceId));
+
+  await deleteImageFiles(oldImages);
+
+  await db
+    .delete(spaceImages)
+    .where(eq(spaceImages.spaceId, spaceId));
+
+  // =========================
+  // UPLOAD GAMBAR BARU
+  // =========================
+
+  await mkdir(UPLOAD_DIR, { recursive: true });
+
+  const uploadedImages = [];
+
+  for (const file of files) {
+    if (!file.type.startsWith("image/")) continue;
+
+    const ext = file.name.split(".").pop();
+
+    const fileName = `${randomUUID()}.${ext}`;
+
+    const buffer = Buffer.from(
+      await file.arrayBuffer()
+    );
+
+    await writeFile(
+      path.join(UPLOAD_DIR, fileName),
+      buffer
+    );
+
+    const image = await db
+      .insert(spaceImages)
+      .values({
+        spaceId,
+        imageUrl: `/uploads/${fileName}`,
+      })
+      .returning();
+
+    uploadedImages.push(image[0]);
+  }
+
+  return c.json({
+    message: "Gambar berhasil diperbarui",
+    data: uploadedImages,
+  });
+});
+
 export default app;

@@ -42,6 +42,9 @@ app.patch("/", async (c) => {
     .set({
       username: body.username,
       email: body.email,
+      phone: body.phone,
+      updatedAt: new Date(),
+      address: body.address,
     })
     .where(eq(users.id, user.id))
     .returning();
