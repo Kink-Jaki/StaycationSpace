@@ -235,25 +235,45 @@ export function EditSpace() {
         throw new Error(`Update gagal: ${errBody}`);
       }
 
-      // 2. Upload gambar baru jika ada — field name "files" (backend pakai form.getAll("files"))
-      if (imageFile) {
-        const imgForm = new FormData();
-        imgForm.append("files", imageFile);
+     if (imageFile) {
+  const imgForm = new FormData();
+  imgForm.append("files", imageFile);
 
-        const imgRes = await fetch(`${API_BASE_URL}/spaces/${id}/images`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: imgForm,
-        });
+  const imgRes = await fetch(
+    `${API_BASE_URL}/spaces/${id}/images`,
+    {
+      method: "PUT", // endpoint replace image
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: imgForm,
+    }
+  );
 
-        if (!imgRes.ok) {
-          const errBody = await imgRes.text();
-          console.error("Upload gambar gagal:", errBody);
-          showToast('error', `Data tersimpan, tapi gambar gagal diupload. (${imgRes.status})`);
-          setSubmitting(false);
-          return;
-        }
-      }
+  if (!imgRes.ok) {
+    const errBody = await imgRes.text();
+    console.error("Update gambar gagal:", errBody);
+
+    showToast(
+      "error",
+      `Data tersimpan, tetapi gambar gagal diperbarui. (${imgRes.status})`
+    );
+
+    setSubmitting(false);
+    return;
+  }
+
+  // refresh preview setelah sukses
+  const newImages = await fetch(
+    `${API_BASE_URL}/spaces/${id}/images`
+  );
+
+  if (newImages.ok) {
+    const data = await newImages.json();
+    setExistingImages(Array.isArray(data) ? data : []);
+    clearImage();
+  }
+}
 
       showToast('success', 'Space berhasil diperbarui!');
       setTimeout(() => (window.location.href = '/space_admin'), 1500);
