@@ -85,7 +85,7 @@ export const Route = createFileRoute('/settings')({
 });
 
 export default function Settings() {
-  const [profile, setProfile] = useState({ name: '', email: '' });
+  const [profile, setProfile] = useState({ username: '', email: '', phone: '', address: ''});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -99,8 +99,10 @@ export default function Settings() {
         });
         const data = await response.json();
         setProfile({
-          name: data.name || data.username || '',
-          email: data.email || ''
+          username: data.username || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
         })
       } catch (err) {
         console.error("Gagal mengambil data profile", err);
@@ -122,12 +124,34 @@ export default function Settings() {
         body: JSON.stringify(profile),
       })
 
-      if (!res.ok) throw new Error('Failed update')
+      if (!res.ok) {
+    const errorText = await res.text()
+      console.log("ERROR BACKEND:", errorText)
+      throw new Error(errorText)
+    }
 
-      alert('Profil berhasil diperbarui!')
+      const updateUser = await res.json()
+
+      localStorage.setItem(
+        'username', 
+        profile.username
+      )
+      localStorage.setItem(
+        'email', 
+        profile.email
+      )
+      localStorage.setItem(
+        'phone', 
+        profile.phone
+      )
+      localStorage.setItem(
+        'address', 
+        profile.address
+      )
+      alert('Profile berhasil diperbarui!')
     } catch (err) {
-      console.error(err)
-      alert('Gagal menyimpan perubahan')
+      console.error('Gagal memperbarui profile', err)
+      alert('Gagal memperbarui profile. Silakan coba lagi.')
     } finally {
       setSaving(false)
     }
@@ -167,8 +191,8 @@ export default function Settings() {
                   <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Nama Lengkap</label>
                   <input 
                     type="text" 
-                    value={profile.name} 
-                    onChange={(e) => setProfile({...profile, name: e.target.value})}
+                    value={profile.username} 
+                    onChange={(e) => setProfile({...profile, username: e.target.value})}
                     className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
                   />
                 </div>
@@ -178,6 +202,24 @@ export default function Settings() {
                     type="email" 
                     value={profile.email} 
                     onChange={(e) => setProfile({...profile, email: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Nomor Telepon</label>
+                  <input 
+                    type="text" 
+                    value={profile.phone} 
+                    onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Alamat</label>
+                  <input 
+                    type="text" 
+                    value={profile.address} 
+                    onChange={(e) => setProfile({...profile, address: e.target.value})}
                     className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
                   />
                 </div>
