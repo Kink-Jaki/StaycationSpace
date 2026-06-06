@@ -241,16 +241,12 @@ export default function BookingUser() {
                 <div className="flex items-center gap-2 w-full lg:w-auto">
                   {booking.status === 'pending' ? (
                     <>
-<<<<<<< HEAD
                       <button
                         onClick={() => {
                           window.location.href = `/payment_user?bookingId=${booking.id}`
                         }}
                         className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors text-sm"
                       >
-=======
-                      <button onClick={() => { window.location.href = `/payment_user?bookingId=${booking.id}`; }} className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
->>>>>>> 5a1573bbaf46994beb58b13d15ec29f5d605554b
                         <Check size={16} />
                         BAYAR SEKARANG
                       </button>
@@ -263,7 +259,6 @@ export default function BookingUser() {
                         <X size={18} />
                       </button>
                     </>
-<<<<<<< HEAD
                   ) : booking.status === 'verified' ? (
                     <button
                       onClick={() => {
@@ -271,11 +266,6 @@ export default function BookingUser() {
                       }}
                       className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors text-sm"
                     >
-=======
-                  ) : booking.status === "verified" ? (
-                    <button onClick={() => { window.location.href = `/rating_ulasan?bookingId=${booking.id}&spaceId=${booking.spaceId}`; }}
-                      className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
->>>>>>> 5a1573bbaf46994beb58b13d15ec29f5d605554b
                       <Star size={16} fill="white" />
                       BERI ULASAN
                     </button>
