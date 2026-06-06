@@ -60,20 +60,19 @@ app.post("/:id/upload",authMiddleware, async (c) => {
     );
   }
 
-  await mkdir("./public/uploads/payments", {
+  await mkdir("./uploads/payments", {
     recursive: true,
   });
 
   const fileName = `${Date.now()}-${file.name}`;
 
-  const path = `./public/uploads/payments/${fileName}`;
+  const path = `./uploads/payments/${fileName}`;
 
   const buffer = await file.arrayBuffer();
 
   await writeFile(path, Buffer.from(buffer));
 
-  const imageUrl =
-    `${process.env.BASE_URL}/uploads/payments/${fileName}`;
+  const imageUrl = `/uploads/payments/${fileName}`;
 
   const updated = await db
     .update(payments)
@@ -92,9 +91,16 @@ app.post("/:id/upload",authMiddleware, async (c) => {
 // GET ALL PAYMENTS
 // =========================
 app.get("/",authMiddleware, async (c) => {
-  const data = await db
-    .select()
-    .from(payments);
+  const bookingId = Number(c.req.query("bookingId"));
+
+  const data = bookingId
+    ? await db
+      .select()
+      .from(payments)
+      .where(eq(payments.bookingId, bookingId))
+    : await db
+      .select()
+      .from(payments);
 
   return c.json(data);
 });

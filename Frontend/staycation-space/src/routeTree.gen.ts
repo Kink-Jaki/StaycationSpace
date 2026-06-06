@@ -16,6 +16,7 @@ import { Route as ReportRouteImport } from './routes/report'
 import { Route as Rating_ulasanRouteImport } from './routes/rating_ulasan'
 import { Route as Promo_userRouteImport } from './routes/promo_user'
 import { Route as PromoRouteImport } from './routes/promo'
+import { Route as Payment_userRouteImport } from './routes/payment_user'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CustomerRouteImport } from './routes/customer'
@@ -57,6 +58,11 @@ const Promo_userRoute = Promo_userRouteImport.update({
 const PromoRoute = PromoRouteImport.update({
   id: '/promo',
   path: '/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Payment_userRoute = Payment_userRouteImport.update({
+  id: '/payment_user',
+  path: '/payment_user',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/payment_user': typeof Payment_userRoute
   '/promo': typeof PromoRoute
   '/promo_user': typeof Promo_userRoute
   '/rating_ulasan': typeof Rating_ulasanRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/payment_user': typeof Payment_userRoute
   '/promo': typeof PromoRoute
   '/promo_user': typeof Promo_userRoute
   '/rating_ulasan': typeof Rating_ulasanRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/payment_user': typeof Payment_userRoute
   '/promo': typeof PromoRoute
   '/promo_user': typeof Promo_userRoute
   '/rating_ulasan': typeof Rating_ulasanRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/customer'
     | '/dashboard'
     | '/login'
+    | '/payment_user'
     | '/promo'
     | '/promo_user'
     | '/rating_ulasan'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/customer'
     | '/dashboard'
     | '/login'
+    | '/payment_user'
     | '/promo'
     | '/promo_user'
     | '/rating_ulasan'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/customer'
     | '/dashboard'
     | '/login'
+    | '/payment_user'
     | '/promo'
     | '/promo_user'
     | '/rating_ulasan'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   CustomerRoute: typeof CustomerRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  Payment_userRoute: typeof Payment_userRoute
   PromoRoute: typeof PromoRoute
   Promo_userRoute: typeof Promo_userRoute
   Rating_ulasanRoute: typeof Rating_ulasanRoute
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PromoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment_user': {
+      id: '/payment_user'
+      path: '/payment_user'
+      fullPath: '/payment_user'
+      preLoaderRoute: typeof Payment_userRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -322,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   CustomerRoute: CustomerRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  Payment_userRoute: Payment_userRoute,
   PromoRoute: PromoRoute,
   Promo_userRoute: Promo_userRoute,
   Rating_ulasanRoute: Rating_ulasanRoute,

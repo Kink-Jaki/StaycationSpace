@@ -44,11 +44,17 @@ app.route("/reports", report)
 app.use("/uploads/*", serveStatic({
   root: "./",
   getContent: async (path) => {
-    const filePath = join(process.cwd(), path.startsWith("/") ? path.slice(1) : path)
+    const normalizedPath = path.startsWith("/") ? path.slice(1) : path
+    const filePath = join(process.cwd(), normalizedPath)
+    const publicFilePath = join(process.cwd(), "public", normalizedPath)
     try {
       return await fs.readFile(filePath)
     } catch {
-      return null
+      try {
+        return await fs.readFile(publicFilePath)
+      } catch {
+        return null
+      }
     }
   },
 }));
