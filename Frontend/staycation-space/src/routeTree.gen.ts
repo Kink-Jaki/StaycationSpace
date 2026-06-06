@@ -13,6 +13,7 @@ import { Route as TambahRouteImport } from './routes/tambah'
 import { Route as Space_adminRouteImport } from './routes/space_admin'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as Rating_ulasanRouteImport } from './routes/rating_ulasan'
 import { Route as PromoRouteImport } from './routes/promo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as Kupon_userRouteImport } from './routes/kupon_user'
@@ -41,6 +42,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Rating_ulasanRoute = Rating_ulasanRouteImport.update({
+  id: '/rating_ulasan',
+  path: '/rating_ulasan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromoRoute = PromoRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/rating_ulasan': typeof Rating_ulasanRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/rating_ulasan': typeof Rating_ulasanRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/rating_ulasan': typeof Rating_ulasanRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/rating_ulasan'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/rating_ulasan'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/rating_ulasan'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   Kupon_userRoute: typeof Kupon_userRoute
   LoginRoute: typeof LoginRoute
   PromoRoute: typeof PromoRoute
+  Rating_ulasanRoute: typeof Rating_ulasanRoute
   ReportRoute: typeof ReportRoute
   SettingsRoute: typeof SettingsRoute
   Space_adminRoute: typeof Space_adminRoute
@@ -227,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/report'
       preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rating_ulasan': {
+      id: '/rating_ulasan'
+      path: '/rating_ulasan'
+      fullPath: '/rating_ulasan'
+      preLoaderRoute: typeof Rating_ulasanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/promo': {
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   Kupon_userRoute: Kupon_userRoute,
   LoginRoute: LoginRoute,
   PromoRoute: PromoRoute,
+  Rating_ulasanRoute: Rating_ulasanRoute,
   ReportRoute: ReportRoute,
   SettingsRoute: SettingsRoute,
   Space_adminRoute: Space_adminRoute,
