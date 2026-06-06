@@ -24,7 +24,6 @@ app.post("/",authMiddleware, async (c) => {
     rating,
     comment,
   } = body;
-  const user = c.get("user");
   const userId = user.id;
 
   // validasi rating
