@@ -67,7 +67,7 @@ function getToken(): string {
   return localStorage.getItem('token') ?? '';
 }
  
-function authHeaders(): HeadersInit {
+function authHeaders(): HeadersInit {         
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${getToken()}`,

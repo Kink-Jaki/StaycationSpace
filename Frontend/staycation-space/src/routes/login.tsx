@@ -165,6 +165,9 @@ export default function Home() {
           "success",
         );
 
+        // Dispatch custom event untuk notify navbar bahwa user sudah login
+        window.dispatchEvent(new Event("userLogin"));
+
         // Melakukan navigasi otomatis setelah login sukses berbasis Role
         setTimeout(() => {
           // Ambil data role dari response backend (data.user.role atau data.role)

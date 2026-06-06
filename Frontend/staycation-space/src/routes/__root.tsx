@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Outlet, createRootRoute, useLocation } from "@tanstack/react-router";
 import {
   Building2,
   User,
@@ -10,9 +10,35 @@ import {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem("token");
+      const storedUsername = localStorage.getItem("username");
+      setIsLoggedIn(!!token);
+      setUsername(storedUsername || "");
+    };
+
+    checkLoginStatus();
+
+    // Listen untuk perubahan di localStorage
+    window.addEventListener("storage", checkLoginStatus);
+    // Listen untuk custom events saat login/logout
+    window.addEventListener("userLogin", checkLoginStatus);
+    window.addEventListener("userLogout", checkLoginStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("userLogin", checkLoginStatus);
+      window.removeEventListener("userLogout", checkLoginStatus);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear(); // hapus token, role, dll
+    window.dispatchEvent(new Event("userLogout"));
     window.location.href = "/login";
   };
 
@@ -32,14 +58,19 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-6 relative">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition-all"
-              >
-                <User size={16} className="text-zinc-400" />
-              </button>
+              {isLoggedIn && (
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition-all"
+                >
+                  <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                    <User size={16} className="text-black" />
+                  </div>
+                  <span className="text-sm text-zinc-300 hidden sm:block">{username}</span>
+                </button>
+              )}
 
-              {isMenuOpen && (
+              {isLoggedIn && isMenuOpen && (
                 <>
                   <div
                     className="fixed inset-0 z-40"
@@ -50,7 +81,7 @@ const Navbar = () => {
                     <button
                       onClick={() => {
                         setIsMenuOpen(false);
-                        console.log("Pengaturan");
+                        window.location.href = "/settings";
                       }}
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 text-left"
                     >
@@ -79,7 +110,7 @@ const Navbar = () => {
       </nav>
 
       {/* MODAL KONFIRMASI LOGOUT */}
-      {showLogoutModal && (
+      {isLoggedIn && showLogoutModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
             <h2 className="text-xl font-bold text-zinc-900">
@@ -113,12 +144,17 @@ const Navbar = () => {
 };
 
 export const Route = createRootRoute({
-  component: () => (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
-      <Navbar />
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-    </div>
-  ),
+  component: () => {
+    const location = useLocation();
+    const isLoginPage = location.pathname === '/login';
+
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
+        {!isLoginPage && <Navbar />}
+        <main className="flex-grow">
+          <Outlet />
+        </main>
+      </div>
+    );
+  },
 });

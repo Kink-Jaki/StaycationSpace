@@ -17,10 +17,11 @@ app.use(authMiddleware);
 // =========================
 app.post("/", async (c) => {
   const body = await c.req.json();
+  const user = c.get("user");
 
   const {
     spaceId,
-    userId,
+    userId = user.id,
     promoId,
     startTime,
     endTime,
