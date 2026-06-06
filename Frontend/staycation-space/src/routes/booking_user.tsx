@@ -1,22 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
 import { 
-  MapPin, Building2, Phone, Mail, Check, ShieldCheck, X, Calendar, Clock, User as UserIcon, Star, ArrowLeft
+  MapPin, Building2, Phone, Mail, Check, ShieldCheck, X, Calendar, Clock, User as UserIcon, Star, ArrowLeft, AlertCircle
 } from 'lucide-react';
 
 const API_BASE_URL = "http://192.168.111.189:3000"; 
 
 export const Route = createFileRoute('/booking_user')({
-    component: BookingUser,
+  component: BookingUser,
 });
 
 export default function BookingUser() {
   const [imageMap, setImageMap] = useState<Record<number, string>>({});
-
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [spaceNames, setSpaceNames] = useState<Record<number, string>>({});
+
+  // State untuk Modal Cancel Booking
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<any | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -33,9 +36,7 @@ export default function BookingUser() {
       });
 
       const data = await res.json();
-
       console.log("BOOKINGS =", data);
-
       setBookings(data);
 
       const names: Record<number, string> = {};
@@ -91,34 +92,76 @@ export default function BookingUser() {
   };
 
   const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+    return new Date(date).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
 
-const formatTime = (date: string) => {
-  return new Date(date).toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+  const formatTime = (date: string) => {
+    return new Date(date).toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-if (loading) {
+  // Handler Buka/Tutup Modal Cancel
+  const handleOpenCancelModal = (booking: any) => {
+    setBookingToCancel(booking);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleCloseCancelModal = () => {
+    setIsCancelModalOpen(false);
+    setBookingToCancel(null);
+  };
+
+  // Handler Eksekusi Cancel Booking API
+  const handleConfirmCancel = async () => {
+    if (!bookingToCancel) return;
+    setIsCancelling(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Sesuaikan Method dan Endpoint ini dengan API backend Anda (Bisa DELETE atau PATCH status)
+      const res = await fetch(`${API_BASE_URL}/bookings/${bookingToCancel.id}`, {
+        method: 'DELETE', 
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        // Hapus data booking dari state agar UI langsung terupdate
+        setBookings(prev => prev.filter(b => b.id !== bookingToCancel.id));
+        // Alternatif: await fetchBookings(); jika ingin refetch data terbaru dari server
+        handleCloseCancelModal();
+      } else {
+        console.error("Gagal membatalkan booking");
+        // Tambahkan notifikasi error jika diperlukan
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F59E0B]"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      Loading...
-    </div>
-  );
-}
-
-  return (
-    <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col">
+    <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col relative">
       
       <main className="max-w-6xl mx-auto px-4 py-12 flex-grow w-full">
         
-        {}
         <button 
           onClick={() => window.history.back()}
           className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-8 transition-colors"
@@ -148,7 +191,7 @@ if (loading) {
               
               {/* Image & Main Info */}
               <div className="flex gap-4">
-                <div className="w-32 h-24 rounded-2xl overflow-hidden bg-gray-200">
+                <div className="w-32 h-24 rounded-2xl overflow-hidden bg-gray-200 shrink-0">
                   {imageMap[booking.spaceId] ? (
                     <img
                       src={imageMap[booking.spaceId]}
@@ -171,7 +214,7 @@ if (loading) {
                     </span>
                   </div>
                   <h3 className="font-extrabold text-lg text-gray-900">{spaceNames[booking.spaceId] || `Space #${booking.spaceId}`}</h3>
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mt-1">
                     <div className="flex items-center gap-1"><Calendar size={13} /> {formatDate(booking.startTime)}</div>
                     <div className="flex items-center gap-1"><Clock size={13} />
                     Slot: {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
@@ -184,8 +227,8 @@ if (loading) {
               </div>
 
               {/* Price & Action */}
-              <div className="lg:ml-auto flex flex-col items-start lg:items-end justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0">
-                <div className="text-right">
+              <div className="lg:ml-auto flex flex-col items-start lg:items-end justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0 min-w-[200px]">
+                <div className="text-left lg:text-right w-full">
                   <p className="text-[10px] font-bold text-gray-400 uppercase">Total Bayar</p>
                   <p className="font-black text-xl text-gray-950">Rp {Number(booking.totalPrice).toLocaleString('id-ID')}</p>
                   <p className="text-[10px] text-gray-400">(Termasuk Jaminan Deposit)</p>
@@ -194,19 +237,23 @@ if (loading) {
                 <div className="flex items-center gap-2 w-full lg:w-auto">
                   {booking.status === "pending" ? (
                     <>
-                      <button className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
+                      <button className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors text-sm">
                         <Check size={16} />
                         BAYAR SEKARANG
                       </button>
 
-                      <button className="p-3 rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors">
+                      <button 
+                        onClick={() => handleOpenCancelModal(booking)}
+                        className="p-2.5 rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors"
+                        title="Batalkan Booking"
+                      >
                         <X size={18} />
                       </button>
                     </>
                   ) : booking.status === "verified" ? (
-                    <button className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
+                    <button className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors text-sm">
                       <Star size={16} fill="white" />
-                      BERI ULASAN & RATING
+                      BERI ULASAN
                     </button>
                   ) : null}
                 </div>
@@ -214,10 +261,16 @@ if (loading) {
               </div>
             </div>
           ))}
+          
+          {bookings.length === 0 && (
+             <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 border-dashed">
+               <p className="text-gray-500">Anda belum memiliki riwayat booking.</p>
+             </div>
+          )}
         </div>
       </main>
 
-      {/* Footer (Matches Beranda design) */}
+      {/* Footer */}
       <footer className="bg-[#FAF8F5] border-t border-gray-200/60 w-full mt-auto">
         <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -235,7 +288,7 @@ if (loading) {
             <div>
               <h4 className="font-bold text-gray-800 mb-4 text-sm tracking-wide">JELAJAHI</h4>
               <ul className="space-y-2.5 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Studi</a></li>
+                <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Studio</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Villa</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Hall</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Lainnya</a></li>
@@ -277,6 +330,61 @@ if (loading) {
           </div>
         </div>
       </footer>
+
+      {/* MODAL KONFIRMASI PEMBATALAN */}
+      {isCancelModalOpen && bookingToCancel && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 p-6 text-center relative">
+            
+            <button 
+              onClick={handleCloseCancelModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5 mt-2">
+              <AlertCircle className="text-red-500 w-8 h-8" />
+            </div>
+            
+            <h3 className="text-xl font-extrabold text-gray-900 mb-2">Batalkan Booking?</h3>
+            
+            <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left">
+              <p className="text-xs text-gray-500">ID Booking:</p>
+              <p className="text-sm font-bold text-gray-800">{bookingToCancel.id}</p>
+              <p className="text-xs text-gray-500 mt-2">Properti:</p>
+              <p className="text-sm font-bold text-gray-800">{spaceNames[bookingToCancel.spaceId] || `Space #${bookingToCancel.spaceId}`}</p>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              Apakah Anda yakin ingin membatalkan booking ini? Tindakan ini tidak dapat dikembalikan.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseCancelModal}
+                className="flex-1 py-3 px-4 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                disabled={isCancelling}
+              >
+                Kembali
+              </button>
+              <button
+                onClick={handleConfirmCancel}
+                disabled={isCancelling}
+                className="flex-1 py-3 px-4 rounded-full font-bold text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-70"
+              >
+                {isCancelling ? (
+                   <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                ) : (
+                  'Ya, Batalkan'
+                )}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
