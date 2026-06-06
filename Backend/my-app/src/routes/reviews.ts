@@ -20,10 +20,11 @@ app.post("/",authMiddleware, async (c) => {
   const {
     bookingId,
     spaceId,
-    userId,
     rating,
     comment,
   } = body;
+  const user = c.get("user");
+  const userId = user.id;
 
   // validasi rating
   if (rating < 1 || rating > 5) {
