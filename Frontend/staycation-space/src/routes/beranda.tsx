@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
 import {
   Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, User as UserIcon, AlertCircle, Sparkles
@@ -56,6 +56,25 @@ const FALLBACK_SPACES: Space[] = [
 ];
 
 export const Route = createFileRoute('/beranda')({
+
+    beforeLoad: async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw redirect({ to: "/login" });
+      }
+
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        localStorage.removeItem("token");
+        throw redirect({ to: "/login" });
+      }
+    },
     component: BerandaUser,
   });
 
@@ -333,11 +352,12 @@ export default function BerandaUser() {
       }
 
       setBookingSuccess(true);
+
       setTimeout(() => {
-        setIsModalOpen(false);
-        setSelectedProperty(null);
-        setBookingSuccess(false);
-      }, 2500);
+        navigate({
+          to: "/booking_user",
+        });
+      }, 2000); 
 
     } catch (err: any) {
       console.error(err);

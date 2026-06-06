@@ -1,32 +1,118 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   MapPin, Building2, Phone, Mail, Check, ShieldCheck, X, Calendar, Clock, User as UserIcon, Star, ArrowLeft
 } from 'lucide-react';
 
-// Mock Data untuk tampilan
-const BOOKINGS = [
-  {
-    id: "STC-2094",
-    spaceName: "The Golden Hours Studio",
-    status: "MENUNGGU PEMBAYARAN",
-    statusType: "pending",
-    date: "10 Juni 2026",
-    time: "14:00 - 17:00",
-    name: "Amanda Putri",
-    price: "586.000",
-    image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=300&h=200&auto=format&fit=crop",
-  },
-];
-
+const API_BASE_URL = "http://192.168.111.189:3000"; 
 
 export const Route = createFileRoute('/booking_user')({
     component: BookingUser,
 });
 
-
-
 export default function BookingUser() {
+  const [imageMap, setImageMap] = useState<Record<number, string>>({});
+
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [spaceNames, setSpaceNames] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_BASE_URL}/bookings`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      console.log("BOOKINGS =", data);
+
+      setBookings(data);
+
+      const names: Record<number, string> = {};
+
+      await Promise.all(
+        data.map(async (booking: any) => {
+          try {
+            const res = await fetch(
+              `${API_BASE_URL}/spaces/${booking.spaceId}`
+            );
+
+            if (res.ok) {
+              const space = await res.json();
+              names[booking.spaceId] = space.name;
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        })
+      );
+
+      setSpaceNames(names);
+
+      const imgs: Record<number, string> = {};
+
+      await Promise.all(
+        data.map(async (booking: any) => {
+          try {
+            const imgRes = await fetch(
+              `${API_BASE_URL}/spaces/${booking.spaceId}/images`
+            );
+
+            if (imgRes.ok) {
+              const imgData = await imgRes.json();
+
+              if (imgData.length > 0) {
+                imgs[booking.spaceId] =
+                  `${API_BASE_URL}${imgData[0].imageUrl}`;
+              }
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        })
+      );
+
+      setImageMap(imgs);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatTime = (date: string) => {
+  return new Date(date).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      Loading...
+    </div>
+  );
+}
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col">
       
@@ -57,28 +143,42 @@ export default function BookingUser() {
 
         {/* Booking List */}
         <div className="space-y-6">
-          {BOOKINGS.map((booking) => (
+          {bookings.map((booking) => (
             <div key={booking.id} className="bg-white border border-gray-100 shadow-sm rounded-3xl p-6 flex flex-col lg:flex-row gap-6">
               
               {/* Image & Main Info */}
               <div className="flex gap-4">
-                <img src={booking.image} alt={booking.spaceName} className="w-32 h-24 object-cover rounded-2xl bg-gray-100" />
+                <div className="w-32 h-24 rounded-2xl overflow-hidden bg-gray-200">
+                  {imageMap[booking.spaceId] ? (
+                    <img
+                      src={imageMap[booking.spaceId]}
+                      alt="Space"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Building2 size={30} className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{booking.id}</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      booking.statusType === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                      booking.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
                     }`}>
                       {booking.status}
                     </span>
                   </div>
-                  <h3 className="font-extrabold text-lg text-gray-900">{booking.spaceName}</h3>
+                  <h3 className="font-extrabold text-lg text-gray-900">{spaceNames[booking.spaceId] || `Space #${booking.spaceId}`}</h3>
                   <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                    <div className="flex items-center gap-1"><Calendar size={13} /> {booking.date}</div>
-                    <div className="flex items-center gap-1"><Clock size={13} /> Slot: {booking.time}</div>
+                    <div className="flex items-center gap-1"><Calendar size={13} /> {formatDate(booking.startTime)}</div>
+                    <div className="flex items-center gap-1"><Clock size={13} />
+                    Slot: {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <UserIcon size={13} /> Nama Tamu: {booking.name}
+                    <UserIcon size={13} /> User ID: {booking.userId}
                   </div>
                 </div>
               </div>
@@ -87,26 +187,30 @@ export default function BookingUser() {
               <div className="lg:ml-auto flex flex-col items-start lg:items-end justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0">
                 <div className="text-right">
                   <p className="text-[10px] font-bold text-gray-400 uppercase">Total Bayar</p>
-                  <p className="font-black text-xl text-gray-950">Rp {booking.price}</p>
+                  <p className="font-black text-xl text-gray-950">Rp {Number(booking.totalPrice).toLocaleString('id-ID')}</p>
                   <p className="text-[10px] text-gray-400">(Termasuk Jaminan Deposit)</p>
                 </div>
                 
                 <div className="flex items-center gap-2 w-full lg:w-auto">
-                  {booking.statusType === 'pending' ? (
+                  {booking.status === "pending" ? (
                     <>
                       <button className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
-                        <Check size={16} /> BAYAR SEKARANG
+                        <Check size={16} />
+                        BAYAR SEKARANG
                       </button>
+
                       <button className="p-3 rounded-full border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors">
                         <X size={18} />
                       </button>
                     </>
-                  ) : (
+                  ) : booking.status === "verified" ? (
                     <button className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
-                      <Star size={16} fill="white" /> BERI ULASAN & RATING
+                      <Star size={16} fill="white" />
+                      BERI ULASAN & RATING
                     </button>
-                  )}
+                  ) : null}
                 </div>
+
               </div>
             </div>
           ))}
