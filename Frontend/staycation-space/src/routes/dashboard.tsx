@@ -38,6 +38,9 @@ interface Review {
   id: number;
   rating: number;
   comment: string;
+  userId?: number;
+  userName?: string;
+  username?: string;
 }
 
 interface RevenueChart {
@@ -556,6 +559,14 @@ export function Home() {
                     className="border rounded-xl p-4"
                   >
                     <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-sm font-bold text-zinc-900">
+                          {review.userName || review.username || `User #${review.userId ?? "-"}`}
+                        </p>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+                          Pengirim Review
+                        </p>
+                      </div>
 
                       <div className="flex gap-1">
                         {renderStars(review.rating)}
@@ -564,7 +575,7 @@ export function Home() {
                     </div>
 
                     <p className="text-sm text-slate-600">
-                      "{review.comment}
+                      "{review.comment}"
                     </p>
                   </div>
                 ))

@@ -5,7 +5,7 @@ import { spaces } from "../db/schema/spaces";
 import { bookings } from "../db/schema/bookings";
 import { payments } from "../db/schema/payments";
 import { reviews } from "../db/schema/reviews";
-import { sql, desc } from "drizzle-orm";
+import { sql, desc, eq } from "drizzle-orm";
 import { adminOnly } from "../middleware/role";
 import { authMiddleware } from "../middleware/auth";
 
@@ -44,9 +44,12 @@ analytics.get("/overview", async (c) => {
       id: reviews.id,
       rating: reviews.rating,
       comment: reviews.comment,
+      userId: reviews.userId,
+      userName: users.username,
       createdAt: reviews.createdAt,
     })
     .from(reviews)
+    .leftJoin(users, eq(reviews.userId, users.id))
     .orderBy(desc(reviews.createdAt))
     .limit(5);
 

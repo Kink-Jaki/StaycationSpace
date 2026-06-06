@@ -350,7 +350,7 @@ export function EditSpace() {
               <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
                   <h2 className="font-bold text-zinc-900 text-sm">1. Informasi Utama</h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">Nama, kategori, kapasitas, deskripsi, dan alamat.</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Perbarui nama, kategori, kapasitas, deskripsi, dan alamat dengan benar.</p>
                 </div>
                 <div className="p-6 grid grid-cols-1 gap-5 sm:grid-cols-6">
 
@@ -409,8 +409,8 @@ export function EditSpace() {
               {/* ── Card 2: Foto ── */}
               <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
-                  <h2 className="font-bold text-zinc-900 text-sm">2. Foto Tempat</h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">Upload foto baru untuk mengganti foto yang ada (opsional).</p>
+                  <h2 className="font-bold text-zinc-900 text-sm">2. Upload Foto</h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">Upload foto baru untuk mengganti foto yang ada.</p>
                 </div>
                 <div className="p-6">
 
@@ -475,18 +475,17 @@ export function EditSpace() {
               <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
                   <h2 className="font-bold text-zinc-900 text-sm">3. Harga & Deposit</h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">Atur tarif sewa per jam dan deposit jaminan.</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Perbarui harga tarif sewa per jam dan deposit jaminan.</p>
                 </div>
                 <div className="p-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="hargaDasar" className={labelClass}>Harga per Jam (IDR)</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm font-medium">Rp</span>
                       <input
                         id="hargaDasar"
                         type="number"
                         min="0"
-                        className={`${inputClass} pl-10`}
+                        className={`${inputClass}`}
                         placeholder="150000"
                         required
                         {...field('hargaDasar')}
@@ -497,12 +496,11 @@ export function EditSpace() {
                   <div>
                     <label htmlFor="depositJaminan" className={labelClass}>Deposit Jaminan (IDR)</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm font-medium">Rp</span>
                       <input
                         id="depositJaminan"
                         type="number"
                         min="0"
-                        className={`${inputClass} pl-10`}
+                        className={`${inputClass}`}
                         placeholder="250000"
                         required
                         {...field('depositJaminan')}
