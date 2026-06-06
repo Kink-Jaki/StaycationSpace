@@ -1,6 +1,6 @@
-import { createFileRoute, redirect, useNavigate} from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
-import { 
+import {
   Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, User as UserIcon, AlertCircle, Sparkles
 } from 'lucide-react';
 
@@ -18,14 +18,6 @@ interface Space {
   status: string;
 }
 
-// Interface tambahan untuk memetakan input promo di form
-interface Promo {
-  id: number;
-  code: string;
-  type: 'percent' | 'fixed';
-  value: string;
-  description: string;
-}
 
 const FALLBACK_SPACES: Space[] = [
   {
@@ -63,44 +55,62 @@ const FALLBACK_SPACES: Space[] = [
   }
 ];
 
-const AVAILABLE_PROMOS: Promo[] = [
-  {
-    id: 1,
-    code: 'STAYNEW',
-    type: 'percent',
-    value: '10',
-    description: 'Potongan 10% untuk transaksi pertama'
-  }
-];
-
 export const Route = createFileRoute('/beranda')({
+    component: BerandaUser,
+  });
 
-  beforeLoad: () => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    // Belum login
-    if (!token) {
-      throw redirect({
-        to: "/login",
-      });
-    }
-
-    // Bukan admin
-    if (role !== "user") {
-      throw redirect({
-        to: "/login",
-      });
-    }
-  },
-
-    component: Beranda,
-});
-
-export default function Beranda() {
+export default function BerandaUser() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [promoData, setPromoData] = useState<any>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  const validatePromo = async (code: string) => {
+  if (!code.trim()) {
+    setPromoData(null);
+    return;
+  }
+
+  try {
+    setPromoLoading(true);
+
+    const res = await fetch(
+      `${API_BASE_URL}/promos/validate`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      }
+    );
+
+    const text = await res.text();
+
+    let data: any;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text };
+    }
+
+    if (res.ok) {
+      setPromoData(data.promo);
+      setBookingError(null);
+    } else {
+      setPromoData(null);
+      setBookingError(data.message || "Promo tidak valid");
+    }
+  } catch (error) {
+    console.error(error);
+    setPromoData(null);
+  } finally {
+    setPromoLoading(false);
+  }
+};
 
   // Definisi kategori disesuaikan dengan enum backend: ["studio", "villa", "hall", "other"]
   const categories = [
@@ -124,17 +134,20 @@ export default function Beranda() {
 
   // Form Booking State yang diselaraskan dengan Schema POST /bookings
   const [bookingForm, setBookingForm] = useState({
-    userId: 1, // Default mock user ID, akan divalidasi oleh authMiddleware di backend
     startTimeDate: '', // Input tanggal mulai
     startTimeHour: '09:00', // Input jam mulai
     duration: 1, // Durasi dalam jam
-    promoId: '', // Pilihan Promo ID (opsional)
+    promoCode: '', // Pilihan Promo Code secara string
     notes: '' // Catatan khusus pemesanan
   });
 
   useEffect(() => {
-    fetchSpaces();
-  }, []);
+    const timeout = setTimeout(() => {
+      validatePromo(bookingForm.promoCode);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [bookingForm.promoCode]);
 
   const fetchSpaces = async () => {
     try {
@@ -168,6 +181,10 @@ export default function Beranda() {
     }
   };
 
+  useEffect(() => {
+    fetchSpaces();
+  }, []);
+
   // Mendapatkan label teks yang ramah pengguna dari kunci enum
   const getCategoryLabel = (typeKey: string) => {
     const matched = categories.find(cat => cat.key === typeKey);
@@ -192,32 +209,62 @@ export default function Beranda() {
 
   // Handler membuka modal pemesanan
   const handleOpenBooking = (property: Space) => {
-    navigate({
-      to: "/booking_user",
-      search: {
-        spaceId: property.id,
-      },
+    setSelectedProperty(property);
+    setBookingForm({
+      startTimeDate: new Date().toISOString().split('T')[0],
+      startTimeHour: '09:00',
+      duration: 1,
+      promoCode: '',
+      notes: ''
     });
+    setBookingSuccess(false);
+    setBookingError(null);
+    setIsModalOpen(true);
   };
 
   // Menghitung Estimasi Harga di Sisi Klien (termasuk promo)
-  const calculateEstimatedPrice = () => {
-    if (!selectedProperty) return 0;
-    
-    let basePrice = Number(selectedProperty.pricePerHour) * bookingForm.duration;
-    
-    if (bookingForm.promoId) {
-      const activePromo = AVAILABLE_PROMOS.find(p => p.id === Number(bookingForm.promoId));
-      if (activePromo) {
-        if (activePromo.type === 'percent') {
-          basePrice = basePrice - (basePrice * Number(activePromo.value)) / 100;
-        } else if (activePromo.type === 'fixed') {
-          basePrice = basePrice - Number(activePromo.value);
-        }
+  const calculatePrice = () => {
+    if (!selectedProperty) {
+      return {
+        subtotal: 0,
+        discount: 0,
+        total: 0,
+      };
+    }
+
+    const subtotal =
+      Number(selectedProperty.pricePerHour) *
+      bookingForm.duration;
+
+    let discount = 0;
+
+    if (promoData) {
+      if (promoData.type === "percent") {
+        discount =
+          (subtotal *
+            Number(promoData.value)) /
+          100;
+      }
+
+      if (promoData.type === "fixed") {
+        discount =
+          Number(promoData.value);
       }
     }
-    return Math.max(0, basePrice);
+
+    const total = Math.max(
+      0,
+      subtotal - discount
+    );
+
+    return {
+      subtotal,
+      discount,
+      total,
+    };
   };
+
+  const priceInfo = calculatePrice();
 
   // Handler submit pemesanan ke POST /bookings di Backend Hono
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -233,31 +280,56 @@ export default function Beranda() {
     
     const endTimeDateObj = new Date(startTimeDateObj.getTime() + (bookingForm.duration * 60 * 60 * 1000));
 
-    // Siapkan body payload sesuai backend
+    // Cari ID promo jika ada
+    const activePromo = promoData;
+
+    console.log("bookingForm =", bookingForm);
+    console.log("duration =", bookingForm.duration);
+    console.log("start =", startTimeDateObj);
+    console.log("end =", endTimeDateObj);
+
+    // userId diambil backend dari JWT
     const payload = {
       spaceId: selectedProperty.id,
-      userId: bookingForm.userId,
-      promoId: bookingForm.promoId ? Number(bookingForm.promoId) : null,
+      promoId: activePromo ? activePromo.id : null,
       startTime: startTimeDateObj.toISOString(),
       endTime: endTimeDateObj.toISOString(),
       notes: bookingForm.notes
     };
 
     try {
+      const token = localStorage.getItem("token");
+      
+      console.log("TOKEN:", token);
+      console.log("PAYLOAD:", payload);
+      console.log("PAYLOAD =", JSON.stringify(payload, null, 2));
+
       const response = await fetch(`${API_BASE_URL}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Menambahkan token dummy jika backend membutuhkan authMiddleware
-          'Authorization': 'Bearer dummy-token-for-preview'
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
 
-      const result = await response.json();
+      const rawText = await response.text();
+
+      console.log("STATUS:", response.status);
+      console.log("RESPONSE:", rawText);
+
+      let result: any;
+
+      try {
+        result = JSON.parse(rawText);
+      } catch {
+        result = { message: rawText };
+      }
 
       if (!response.ok) {
-        throw new Error(result.message || "Gagal membuat reservasi.");
+        throw new Error(
+          result?.message || "Gagal membuat reservasi."
+        );
       }
 
       setBookingSuccess(true);
@@ -291,7 +363,7 @@ export default function Beranda() {
               Temukan Studio, Villa &<br />Coworking Impianmu!
             </h2>
             <p className="text-gray-400 text-sm md:text-base mb-8 max-w-lg">
-              Gunakan kode promo <span className="text-[#F59E0B] font-bold">STAYNEW</span> untuk potongan 10% pada transaksi pertama Anda.
+              Temukan dan gunakan kode promo yang tersedia untuk menikmati berbagai potongan harga.
             </p>
             <button className="bg-white text-black font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:bg-gray-100 transition-colors">
               Jelajahi Villa Eksklusif
@@ -301,11 +373,11 @@ export default function Beranda() {
 
           {/* Quick Actions */}
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-             <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
+             <button onClick={() => navigate({ to: "/booking_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
                 <CalendarCheck size={18} className="text-[#F59E0B]" />
                 Booking Saya
              </button>
-             <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
+             <button onClick={() => navigate({ to: "/kupon_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
                 <Ticket size={18} className="text-[#F59E0B]" />
                 Kupon Promo
              </button>
@@ -318,9 +390,9 @@ export default function Beranda() {
             {/* Search Input */}
             <div className="flex items-center gap-2 px-4 py-2 w-full md:w-auto flex-1 border-b md:border-b-0 md:border-r border-gray-100">
               <Search size={20} className="text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Cari properti, studio, atau lokasi..." 
+              <input
+                type="text"
+                placeholder="Cari properti, studio, atau lokasi..."
                 className="outline-none w-full text-sm bg-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -398,7 +470,7 @@ export default function Beranda() {
                         Rp {Number(property.pricePerHour).toLocaleString("id-ID")} <span className="text-xs font-normal text-gray-500">/ jam</span>
                       </p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => handleOpenBooking(property)}
                       className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors cursor-pointer"
                     >
@@ -440,7 +512,7 @@ export default function Beranda() {
             <div>
               <h4 className="font-bold text-gray-800 mb-4 text-sm tracking-wide">JELAJAHI</h4>
               <ul className="space-y-2.5 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Studi</a></li>
+                <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Studio</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Villa</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Hall</a></li>
                 <li><a href="#" className="hover:text-[#F59E0B] transition-colors">Lainnya</a></li>
@@ -501,7 +573,7 @@ export default function Beranda() {
                 <span className="text-xs font-bold text-[#F59E0B] tracking-wider uppercase">{selectedProperty.type}</span>
                 <h3 className="font-bold text-lg mt-0.5 leading-snug">Konfirmasi Reservasi</h3>
               </div>
-              <button 
+              <button
                 onClick={() => { setIsModalOpen(false); setSelectedProperty(null); }}
                 className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
               >
@@ -546,30 +618,14 @@ export default function Beranda() {
                     <span>{bookingError}</span>
                   </div>
                 )}
-
-                {/* Input User ID - Diperlukan oleh Backend Schema */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">User ID Pemesan</label>
-                  <div className="relative">
-                    <UserIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      type="number" 
-                      required
-                      placeholder="Masukkan ID Pengguna Anda"
-                      className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
-                      value={bookingForm.userId}
-                      onChange={(e) => setBookingForm({ ...bookingForm, userId: Number(e.target.value) || 1 })}
-                    />
-                  </div>
-                </div>
-
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Tanggal Sewa</label>
                     <div className="relative">
                       <Calendar size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input 
-                        type="date" 
+                      <input
+                        type="date"
                         required
                         className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
                         value={bookingForm.startTimeDate}
@@ -582,8 +638,8 @@ export default function Beranda() {
                     <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Waktu Mulai</label>
                     <div className="relative">
                       <Clock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input 
-                        type="time" 
+                      <input
+                        type="time"
                         required
                         className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
                         value={bookingForm.startTimeHour}
@@ -598,8 +654,8 @@ export default function Beranda() {
                     <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Durasi Sewa</label>
                     <div className="relative">
                       <Clock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         min={1}
                         required
                         className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50"
@@ -612,31 +668,46 @@ export default function Beranda() {
                     </div>
                   </div>
 
-                  {/* Input Pilihan Kupon Diskon Aktif */}
+                  {/* Input Pilihan Kupon Diskon Aktif - DIUBAH JADI STRING INPUT */}
                   <div>
                     <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Kupon Promo (Pilihan)</label>
                     <div className="relative">
                       <Sparkles size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <select 
-                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50 appearance-none"
-                        value={bookingForm.promoId}
-                        onChange={(e) => setBookingForm({ ...bookingForm, promoId: e.target.value })}
-                      >
-                        <option value="">Tanpa Promo</option>
-                        {AVAILABLE_PROMOS.map((promo) => (
-                          <option key={promo.id} value={promo.id}>
-                            {promo.code} ({promo.type === 'percent' ? `${promo.value}%` : `-Rp ${Number(promo.value).toLocaleString()}`})
-                          </option>
-                        ))}
-                      </select>
+                      <input
+                        type="text"
+                        placeholder="KODE PROMO"
+                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50 uppercase"
+                        value={bookingForm.promoCode}
+                       onChange={(e) => {
+                        const code = e.target.value.toUpperCase();
+
+                        setBookingForm({
+                          ...bookingForm,
+                          promoCode: code,
+                        });
+                      }}
+                      />
                     </div>
+                    {/* Tampilkan indikator saat kode promo sedang divalidasi */}
+                    {bookingForm.promoCode && promoLoading && (
+                      <p className="text-[10px] text-gray-500 mt-1.5 ml-1">
+                        Memeriksa kode promo...
+                      </p>
+                    )}
+
+                    {/* Tampilkan indikator jika kode promo cocok dengan data */}
+                    {bookingForm.promoCode && promoData && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1.5 ml-1 flex items-center gap-1">
+                        <Check size={10} strokeWidth={3} /> Kode berhasil diterapkan
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 {/* Input Catatan (Notes) */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 tracking-wide mb-1.5 uppercase">Catatan Tambahan (Notes)</label>
-                  <textarea 
+                  <textarea
                     rows={2}
                     placeholder="Contoh: Kebutuhan tambahan meja, stand mic, dll."
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all bg-gray-50/50 resize-none"
@@ -646,24 +717,38 @@ export default function Beranda() {
                 </div>
 
                 {/* Total Bayar Preview */}
-                <div className="mt-6 p-4 rounded-2xl bg-[#FAF8F5] border border-amber-100/50 flex justify-between items-center">
-                  <div>
-                    <p className="text-xs font-bold text-gray-400">ESTIMASI TOTAL BAYAR</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      ({bookingForm.duration} jam x Rp {Number(selectedProperty.pricePerHour).toLocaleString("id-ID")})
-                      {bookingForm.promoId && <span className="text-emerald-600 block text-[10px] font-bold">Promo Kupon Diterapkan</span>}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-black text-xl text-gray-950">
-                      Rp {calculateEstimatedPrice().toLocaleString("id-ID")}
-                    </p>
-                  </div>
-                </div>
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-amber-100">
+  <div className="space-y-2 text-sm">
+
+    <div className="flex justify-between">
+      <span>Harga Sewa</span>
+      <span>
+        Rp {priceInfo.subtotal.toLocaleString("id-ID")}
+      </span>
+    </div>
+
+    {priceInfo.discount > 0 && (
+      <div className="flex justify-between text-emerald-600">
+        <span>Diskon Promo</span>
+        <span>
+          - Rp {priceInfo.discount.toLocaleString("id-ID")}
+        </span>
+      </div>
+    )}
+
+    <div className="border-t pt-2 flex justify-between font-bold text-lg">
+      <span>Total Bayar</span>
+      <span>
+        Rp {priceInfo.total.toLocaleString("id-ID")}
+      </span>
+    </div>
+
+  </div>
+</div>
 
                 {/* Tombol Aksi */}
                 <div className="pt-2 flex gap-3">
-                  <button 
+                  <button
                     type="button"
                     disabled={isLoading}
                     onClick={() => { setIsModalOpen(false); setSelectedProperty(null); }}
@@ -671,7 +756,7 @@ export default function Beranda() {
                   >
                     Batal
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     disabled={isLoading}
                     className="flex-1 bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-3 rounded-full text-sm shadow-md transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-55"
