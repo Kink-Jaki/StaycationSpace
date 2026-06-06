@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import {
   ArrowLeft, Copy, CheckCircle2, AlertCircle, Calendar, Percent, DollarSign, Loader2
@@ -23,7 +23,6 @@ export const Route = createFileRoute('/promo_user')({
 })
 
 export default function PromoUserPage() {
-  const navigate = useNavigate()
   const [promos, setPromos] = useState<Promo[]>([])
   const [loading, setLoading] = useState(true)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
@@ -115,29 +114,20 @@ export default function PromoUserPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">
-      {/* Header */}
-      <header className="bg-[#121212] border-b border-zinc-800 px-4 sm:px-6 py-4 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate({ to: '/beranda' })}
-            className="flex items-center gap-2 text-white hover:text-amber-500 transition-colors font-semibold"
-          >
-            <ArrowLeft size={20} />
-            <span>Kembali</span>
-          </button>
-          <h1 className="text-xl font-bold text-white">Kupon & Promo</h1>
-          <div className="w-20"></div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
+        <button 
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-8 transition-colors">
+          <ArrowLeft size={18} />
+          Kembali ke Beranda
+        </button>
         {/* Page Title */}
-        <div className="mb-10">
+        <div className="mb-10 text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 mb-3">
             Promo Tersedia
           </h2>
-          <p className="text-zinc-600 text-base md:text-lg max-w-2xl">
+          <p className="text-zinc-600 text-base md:text-lg max-w-2xl text-center mx-auto">
             Temukan dan gunakan kode promo eksklusif untuk mendapatkan diskon terbaik saat melakukan pemesanan.
           </p>
         </div>

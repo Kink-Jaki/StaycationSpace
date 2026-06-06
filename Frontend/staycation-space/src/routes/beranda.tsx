@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react';
 import {
-  Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, User as UserIcon, AlertCircle, Sparkles
+  Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, AlertCircle, Sparkles
 } from 'lucide-react';
 
 const API_BASE_URL = "http://192.168.111.189:3000";

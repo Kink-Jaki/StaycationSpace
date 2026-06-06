@@ -55,13 +55,14 @@ interface Payment {
   image_url?: string;
   amount?: number | string;
   bookingId?: number;
+  booking_id?: number;
 }
  
 // ─────────────────────────────────────────────
 // Config
 // ─────────────────────────────────────────────
  
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.152:3000';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.189:3000';
  
 function getToken(): string {
   return localStorage.getItem('token') ?? '';
@@ -222,20 +223,21 @@ async function apiFetchPaymentByBookingId(bookingId: number): Promise<Payment | 
     if (!res.ok) return null;
     const data = await res.json();
     const list: any[] = Array.isArray(data) ? data : (data.data ?? []);
-    return list.length > 0 ? list[0] : null;
+    return list.find(item => Number(item.bookingId ?? item.booking_id) === bookingId) ?? null;
   } catch {
     return null;
   }
 }
  
 function proofImageUrl(payment: Payment): string | null {
-  const path =
+  let path =
     payment.proofUrl ??
     payment.proof_url ??
     payment.imageUrl ??
     payment.image_url ??
     null;
   if (!path) return null;
+  path = path.replace(/^undefined\/?/, '/');
   return path.startsWith('http') ? path : `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`;
 }
  
@@ -738,20 +740,26 @@ export function BookingAdmin() {
   }, []);
  
   async function handleApprove(b: Booking) {
+    const payment = b.paymentId ? null : await apiFetchPaymentByBookingId(b.id);
+    const paymentId = b.paymentId ?? (payment?.id ? String(payment.id) : null);
+
     await Promise.all([
       apiPatchBookingStatus(b.id, 'Dikonfirmasi'),
-      b.paymentId ? apiPatchPaymentStatus(b.paymentId, 'verified') : Promise.resolve(),
+      paymentId ? apiPatchPaymentStatus(paymentId, 'verified') : Promise.resolve(),
     ]);
-    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Dikonfirmasi' as BookingStatus } : bk));
+    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Dikonfirmasi' as BookingStatus, paymentId } : bk));
     showToast(`Booking #${b.id} berhasil disetujui.`, 'success');
   }
  
   async function handleReject(b: Booking) {
+    const payment = b.paymentId ? null : await apiFetchPaymentByBookingId(b.id);
+    const paymentId = b.paymentId ?? (payment?.id ? String(payment.id) : null);
+
     await Promise.all([
       apiPatchBookingStatus(b.id, 'Dibatalkan'),
-      b.paymentId ? apiPatchPaymentStatus(b.paymentId, 'rejected') : Promise.resolve(),
+      paymentId ? apiPatchPaymentStatus(paymentId, 'rejected') : Promise.resolve(),
     ]);
-    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Dibatalkan' as BookingStatus } : bk));
+    setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, status: 'Dibatalkan' as BookingStatus, paymentId } : bk));
     showToast(`Booking #${b.id} berhasil ditolak.`, 'error');
   }
  

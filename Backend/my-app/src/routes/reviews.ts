@@ -16,11 +16,11 @@ app.use(authMiddleware);
 // =========================
 app.post("/",authMiddleware, async (c) => {
   const body = await c.req.json();
+  const user = c.get("user");
 
   const {
     bookingId,
     spaceId,
-    userId,
     rating,
     comment,
   } = body;
@@ -49,6 +49,24 @@ app.post("/",authMiddleware, async (c) => {
     );
   }
 
+  if (booking.userId !== user.id) {
+    return c.json(
+      {
+        message: "Booking bukan milik user ini",
+      },
+      403
+    );
+  }
+
+  if (booking.spaceId !== spaceId) {
+    return c.json(
+      {
+        message: "Space tidak sesuai dengan booking",
+      },
+      400
+    );
+  }
+
   // hanya booking verified
   if (booking.status !== "verified") {
     return c.json(
@@ -65,7 +83,7 @@ app.post("/",authMiddleware, async (c) => {
     .values({
       bookingId,
       spaceId,
-      userId,
+      userId: user.id,
       rating,
       comment,
     })

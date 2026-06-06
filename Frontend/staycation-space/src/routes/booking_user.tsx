@@ -120,7 +120,7 @@ if (loading) {
         
         {}
         <button 
-          onClick={() => window.history.back()}
+          onClick={() => window.location.href = "/beranda"} 
           className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 mb-8 transition-colors"
         >
           <ArrowLeft size={18} />
@@ -194,7 +194,7 @@ if (loading) {
                 <div className="flex items-center gap-2 w-full lg:w-auto">
                   {booking.status === "pending" ? (
                     <>
-                      <button className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
+                      <button onClick={() => { window.location.href = `/payment_user?bookingId=${booking.id}`; }} className="flex-1 lg:flex-none bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
                         <Check size={16} />
                         BAYAR SEKARANG
                       </button>
@@ -204,7 +204,8 @@ if (loading) {
                       </button>
                     </>
                   ) : booking.status === "verified" ? (
-                    <button className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
+                    <button onClick={() => { window.location.href = `/rating_ulasan?bookingId=${booking.id}&spaceId=${booking.spaceId}`; }}
+                      className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white font-bold px-6 py-2.5 rounded-full flex items-center justify-center gap-2 transition-colors">
                       <Star size={16} fill="white" />
                       BERI ULASAN & RATING
                     </button>
