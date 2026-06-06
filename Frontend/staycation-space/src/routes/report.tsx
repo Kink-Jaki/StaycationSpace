@@ -1,11 +1,12 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useCallback } from 'react'
 import {
   LayoutDashboard, Building2, BarChart3, Calendar as CalendarIcon,
   Users, LogOut, Settings, Percent, ChevronDown,
   Search, Menu, RefreshCw, Wallet, FileSpreadsheet, FileText
 } from 'lucide-react'
-
+import { redirect } from '@tanstack/react-router'
+ 
 interface ReportSummary {
   totalBookings: number
   pendingBookings: number
@@ -13,7 +14,7 @@ interface ReportSummary {
   cancelledBookings: number
   totalRevenue: number
 }
-
+ 
 interface BookingReportItem {
   id: number
   spaceId: number
@@ -24,17 +25,17 @@ interface BookingReportItem {
   status: string
   notes: string
 }
-
+ 
 interface User {
   id: number
   username: string
 }
-
+ 
 interface Space {
   id: number
   name: string
 }
-
+ 
 interface SidebarProps {
   activeTab: string
   setActiveTab: (tab: string) => void
@@ -42,7 +43,7 @@ interface SidebarProps {
   setIsSidebarOpen: (open: boolean) => void
   setShowLogoutModal: (show: boolean) => void
 }
-
+ 
 if (typeof window !== 'undefined') {
   if (!localStorage.getItem('token')) {
     localStorage.setItem('token', 'mock_admin_preview_token')
@@ -50,7 +51,7 @@ if (typeof window !== 'undefined') {
     localStorage.setItem('role', 'admin')
   }
 }
-
+ 
 let detectedApiUrl = 'http://192.168.111.189:3000'
 try {
   const metaEnv = (import.meta as any)?.env
@@ -61,7 +62,7 @@ try {
   // Abaikan
 }
 const BASE_URL = detectedApiUrl
-
+ 
 function getToken(): string { return localStorage.getItem('token') ?? '' }
 function authHeaders(): HeadersInit {
   return { 
@@ -69,16 +70,16 @@ function authHeaders(): HeadersInit {
     'Authorization': `Bearer ${getToken()}` 
   }
 }
-
+ 
 async function apiFetchReportSummary(): Promise<ReportSummary> {
   const res = await fetch(`${BASE_URL}/reports/bookings`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return await res.json()
 }
-
+ 
 type ToastType = 'success' | 'error' | 'info'
 interface ToastState { message: string; type: ToastType; visible: boolean }
-
+ 
 function useToast() {
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'info', visible: false })
   const show = useCallback((message: string, type: ToastType = 'info') => {
@@ -87,7 +88,7 @@ function useToast() {
   }, [])
   return { toast, show }
 }
-
+ 
 function Toast({ toast }: { toast: ToastState }) {
   if (!toast.visible) return null
   const bg = toast.type === 'success' ? 'bg-emerald-500' : toast.type === 'error' ? 'bg-rose-500' : 'bg-zinc-700'
@@ -97,12 +98,12 @@ function Toast({ toast }: { toast: ToastState }) {
     </div>
   )
 }
-
+ 
 function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setShowLogoutModal }: SidebarProps) {
   const username = localStorage.getItem('username') ?? 'Admin Staycation'
   const role = localStorage.getItem('role') ?? 'admin'
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-
+ 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Space',     icon: Building2,       path: '/space_admin' },
@@ -112,7 +113,7 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setShowLogoutModal }:
     { name: 'Report',    icon: BarChart3,       path: '/report' },
     { name: 'Settings',  icon: Settings,        path: '/settings' },
   ]
-
+ 
   return (
     <aside className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex flex-col h-full justify-between">
@@ -155,37 +156,31 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setShowLogoutModal }:
     </aside>
   )
 }
-
+ 
 export const Route = createFileRoute('/report')({
   beforeLoad: () => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-
-    // Belum login
+ 
     if (!token) {
-      throw redirect({
-        to: "/login",
-      });
+      throw redirect({ to: "/login" });
     }
-
-    // Bukan admin
+ 
     if (role !== "admin") {
-      throw redirect({
-        to: "/login",
-      });
+      throw redirect({ to: "/login" });
     }
   },
   
-    component: ReportAdmin,
-  });
-
+  component: ReportAdmin,
+});
+ 
 export default function ReportAdmin() {
   const [activeTab] = useState<string>('Report')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
-
+ 
   const [summary, setSummary] = useState<ReportSummary>({
     totalBookings: 0,
     pendingBookings: 0,
@@ -193,13 +188,13 @@ export default function ReportAdmin() {
     cancelledBookings: 0,
     totalRevenue: 0
   })
-
+ 
   const [bookings, setBookings] = useState<BookingReportItem[]>([])
   const [users, setUsers] = useState<Record<number, string>>({})
   const [spaces, setSpaces] = useState<Record<number, string>>({})
-
+ 
   const { toast, show: showToast } = useToast()
-
+ 
   const loadBookingsAndRelations = useCallback(async () => {
     try {
       const [bookingsRes, usersRes, spacesRes] = await Promise.all([
@@ -207,33 +202,30 @@ export default function ReportAdmin() {
         fetch(`${BASE_URL}/users`, { headers: authHeaders() }),
         fetch(`${BASE_URL}/spaces`, { headers: authHeaders() })
       ])
-
+ 
       if (!bookingsRes.ok) throw new Error(`HTTP Bookings ${bookingsRes.status}`)
-
+ 
       const bookingsData = await bookingsRes.json()
       const usersData: User[] = usersRes.ok ? await usersRes.json() : []
       const spacesData: Space[] = spacesRes.ok ? await spacesRes.json() : []
-
-      // Mapping array ke object untuk pencarian O(1) berdasarkan ID
-      // Menggunakan properti username sesuai permintaan
+ 
       const userMap = usersData.reduce((acc, u) => ({ ...acc, [u.id]: u.username }), {} as Record<number, string>)
       const spaceMap = spacesData.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as Record<number, string>)
-
+ 
       setUsers(userMap)
       setSpaces(spaceMap)
       setBookings(bookingsData)
     } catch (error) {
       console.error(error)
-      // Gunakan data fallback jika API gagal
       setBookings([
-          { id: 101, spaceId: 1, userId: 1, startTime: '2023-10-27T10:00:00Z', endTime: '2023-10-28T10:00:00Z', totalPrice: '1500000', status: 'verified', notes: '' },
-          { id: 102, spaceId: 2, userId: 2, startTime: '2023-10-29T14:00:00Z', endTime: '2023-10-31T12:00:00Z', totalPrice: '3000000', status: 'pending', notes: '' }
+        { id: 101, spaceId: 1, userId: 1, startTime: '2023-10-27T10:00:00Z', endTime: '2023-10-28T10:00:00Z', totalPrice: '1500000', status: 'verified', notes: '' },
+        { id: 102, spaceId: 2, userId: 2, startTime: '2023-10-29T14:00:00Z', endTime: '2023-10-31T12:00:00Z', totalPrice: '3000000', status: 'pending', notes: '' }
       ])
       setUsers({1: 'Budi Santoso', 2: 'Siti Aminah'})
       setSpaces({1: 'Villa Kaca Bandung', 2: 'Apartemen Sudirman'})
     }
   }, [])
-
+ 
   const loadReportData = useCallback(() => {
     setLoading(true)
     apiFetchReportSummary()
@@ -254,37 +246,136 @@ export default function ReportAdmin() {
       })
       .finally(() => setLoading(false))
   }, [showToast])
-
+ 
   useEffect(() => {
     loadReportData()
     loadBookingsAndRelations()
   }, [loadReportData, loadBookingsAndRelations])
-
-  // Logika pencarian yang telah diperbarui
+ 
   const filteredBookings = bookings.filter((b) => {
     const q = searchQuery.toLowerCase()
-    
-    // Ambil nama berdasarkan map, atau fallback ke format "User #ID"
     const penyewaName = (users[b.userId] || `User #${b.userId}`).toLowerCase()
     const spaceName = (spaces[b.spaceId] || `Space #${b.spaceId}`).toLowerCase()
-
     return (
       String(b.id).includes(q) ||
       penyewaName.includes(q) ||
       spaceName.includes(q)
     )
   })
-
-  const triggerDownload = (format: 'Excel' | 'PDF') => {
-    showToast(`Mengekspor file laporan sebagai ${format}...`, 'info')
-    setTimeout(() => {
-      showToast(`Laporan ${format} berhasil diunduh.`, 'success')
-    }, 1500)
+ 
+  // ========================================
+  // EXPORT CSV
+  // ========================================
+  const exportCSV = () => {
+    const headers = ['ID Booking', 'Penyewa', 'Space Unit', 'Tanggal Sewa', 'Total Harga', 'Status']
+ 
+    const rows = filteredBookings.map(b => [
+      b.id,
+      users[b.userId] || `User #${b.userId}`,
+      spaces[b.spaceId] || `Space #${b.spaceId}`,
+      new Date(b.startTime).toLocaleDateString('id-ID'),
+      Number(b.totalPrice),
+      b.status
+    ])
+ 
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+ 
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `laporan-booking-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('CSV berhasil diunduh.', 'success')
   }
-
+ 
+  // ========================================
+  // EXPORT PDF
+  // ========================================
+  const exportPDF = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      showToast('Popup diblokir browser. Izinkan popup lalu coba lagi.', 'error')
+      return
+    }
+ 
+    const rows = filteredBookings.map(b => `
+      <tr>
+        <td>${b.id}</td>
+        <td>${users[b.userId] || `User #${b.userId}`}</td>
+        <td>${spaces[b.spaceId] || `Space #${b.spaceId}`}</td>
+        <td>${new Date(b.startTime).toLocaleDateString('id-ID')}</td>
+        <td>Rp ${Number(b.totalPrice).toLocaleString('id-ID')}</td>
+        <td>${b.status}</td>
+      </tr>
+    `).join('')
+ 
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Laporan Booking - ${new Date().toLocaleDateString('id-ID')}</title>
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; color: #111; }
+          h2 { margin-bottom: 4px; font-size: 18px; }
+          p.sub { color: #666; margin-bottom: 20px; font-size: 11px; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background: #f4f4f4; text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; border-bottom: 2px solid #ddd; }
+          td { padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 11px; }
+          tr:hover td { background: #fafafa; }
+          .status { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+          .verified { background: #d1fae5; color: #065f46; }
+          .paid     { background: #dbeafe; color: #1e40af; }
+          .pending  { background: #fef3c7; color: #92400e; }
+          .cancelled{ background: #fee2e2; color: #991b1b; }
+          @media print { body { padding: 0; } button { display: none; } }
+        </style>
+      </head>
+      <body>
+        <h2>Laporan Booking</h2>
+        <p class="sub">Dicetak pada: ${new Date().toLocaleString('id-ID')} &nbsp;|&nbsp; Total: ${filteredBookings.length} transaksi</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Penyewa</th>
+              <th>Space Unit</th>
+              <th>Tanggal Sewa</th>
+              <th>Total Harga</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body>
+      </html>
+    `)
+ 
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+      printWindow.close()
+    }, 300)
+ 
+    showToast('Dialog cetak PDF dibuka.', 'success')
+  }
+ 
+  const triggerDownload = (format: 'Excel' | 'PDF') => {
+    if (format === 'Excel') {
+      exportCSV()
+    } else {
+      exportPDF()
+    }
+  }
+ 
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex w-full">
-
+ 
       {/* MOBILE HEADER */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#121212] p-4 flex items-center justify-between text-white">
         <h1 className="font-bold">STAYCATION<span className="text-amber-500">SPACE</span></h1>
@@ -292,7 +383,7 @@ export default function ReportAdmin() {
           <Menu size={20} />
         </button>
       </div>
-
+ 
       {/* SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
@@ -301,10 +392,10 @@ export default function ReportAdmin() {
         setIsSidebarOpen={setIsSidebarOpen}
         setShowLogoutModal={setShowLogoutModal}
       />
-
+ 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col overflow-y-auto">
-
+ 
         {/* HEADER */}
         <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 mt-14 md:mt-0">
           <div className="flex items-center gap-4">
@@ -325,7 +416,7 @@ export default function ReportAdmin() {
             <RefreshCw size={13} className={loading ? "animate-spin text-amber-500" : ""} /> Refresh
           </button>
         </header>
-
+ 
         {/* CONTENT */}
         <main className="p-6 md:p-8 space-y-6 max-w-7xl w-full mx-auto">
           
@@ -344,8 +435,8 @@ export default function ReportAdmin() {
               </button>
             </div>
           </div>
-
-          {}
+ 
+          {/* SUMMARY CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm col-span-1 sm:col-span-2 lg:col-span-2">
               <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider">Total Revenue</p>
@@ -356,32 +447,32 @@ export default function ReportAdmin() {
                 <Wallet size={12} /> Terkonfirmasi &amp; menunggu verifikasi
               </p>
             </div>
-
+ 
             <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm">
               <p className="text-[10px] text-zinc-400 font-bold uppercase">Total Booking</p>
               <h2 className="text-2xl font-bold text-zinc-900 mt-1">{summary.totalBookings}</h2>
               <span className="text-[9px] font-semibold text-zinc-400">Semua reservasi</span>
             </div>
-
+ 
             <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm">
               <p className="text-[10px] text-emerald-500 font-bold uppercase">Dikonfirmasi</p>
               <h2 className="text-2xl font-bold text-emerald-600 mt-1">{summary.verifiedBookings}</h2>
               <span className="text-[9px] font-semibold text-emerald-400">Pembayaran aman</span>
             </div>
-
+ 
             <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm">
               <p className="text-[10px] text-amber-500 font-bold uppercase">Menunggu</p>
               <h2 className="text-2xl font-bold text-amber-600 mt-1">{summary.pendingBookings}</h2>
               <span className="text-[9px] font-semibold text-rose-500">{summary.cancelledBookings} dibatalkan</span>
             </div>
           </div>
-
-          {}
+ 
+          {/* TABLE */}
           <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-100">
               <h3 className="text-sm font-bold text-zinc-900">Table Report - Riwayat Transaksi</h3>
             </div>
-
+ 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -431,11 +522,11 @@ export default function ReportAdmin() {
               </table>
             </div>
           </div>
-
+ 
         </main>
       </div>
-
-      {}
+ 
+      {/* LOGOUT MODAL */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
@@ -448,7 +539,7 @@ export default function ReportAdmin() {
           </div>
         </div>
       )}
-
+ 
       <Toast toast={toast} />
     </div>
   )

@@ -5,7 +5,7 @@ import { spaces } from "../db/schema/spaces";
 import { bookings } from "../db/schema/bookings";
 import { payments } from "../db/schema/payments";
 import { reviews } from "../db/schema/reviews";
-import { sql, desc } from "drizzle-orm";
+import { sql, desc, eq } from "drizzle-orm";
 import { adminOnly } from "../middleware/role";
 import { authMiddleware } from "../middleware/auth";
 
