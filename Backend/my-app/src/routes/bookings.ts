@@ -4,6 +4,7 @@ import { bookings } from "../db/schema/bookings";
 import { promos } from "../db/schema/promos";
 import { eq, sql } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
+import { adminOnly } from "../middleware/role";
 
 
 const app = new Hono();
@@ -19,7 +20,6 @@ app.post("/", async (c) => {
 
   const {
     spaceId,
-    userId = user.id,
     promoId,
     startTime,
     endTime,
@@ -164,7 +164,7 @@ app.post("/", async (c) => {
     .insert(bookings)
     .values({
       spaceId,
-      userId,
+      userId: user.id,
       promoId,
       startTime: start,
       endTime: end,
@@ -197,10 +197,17 @@ app.post("/", async (c) => {
 
 
 // =========================
-// GET ALL BOOKINGS
+// GET BOOKINGS
 // =========================
 app.get("/", async (c) => {
-  const data = await db.select().from(bookings);
+  const user = c.get("user");
+
+  const data = user.role === "admin"
+    ? await db.select().from(bookings)
+    : await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.userId, user.id));
 
   return c.json(data);
 });
@@ -211,6 +218,7 @@ app.get("/", async (c) => {
 // =========================
 app.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
+  const user = c.get("user");
 
   const data = await db
     .select()
@@ -224,6 +232,13 @@ app.get("/:id", async (c) => {
     );
   }
 
+  if (user.role !== "admin" && data[0].userId !== user.id) {
+    return c.json(
+      { message: "Anda tidak memiliki akses ke booking ini" },
+      403
+    );
+  }
+
   return c.json(data[0]);
 });
 
@@ -231,7 +246,7 @@ app.get("/:id", async (c) => {
 // =========================
 // UPDATE BOOKING STATUS
 // =========================
-app.patch("/:id/status", async (c) => {
+app.patch("/:id/status", adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
   const body = await c.req.json();
@@ -289,6 +304,25 @@ app.get("/availability/check", async (c) => {
 // =========================
 app.delete("/:id", async (c) => {
   const id = Number(c.req.param("id"));
+  const user = c.get("user");
+
+  const booking = await db.query.bookings.findFirst({
+    where: (b, { eq }) => eq(b.id, id),
+  });
+
+  if (!booking) {
+    return c.json(
+      { message: "Booking tidak ditemukan" },
+      404
+    );
+  }
+
+  if (user.role !== "admin" && booking.userId !== user.id) {
+    return c.json(
+      { message: "Anda tidak memiliki akses ke booking ini" },
+      403
+    );
+  }
 
   await db
     .delete(bookings)
