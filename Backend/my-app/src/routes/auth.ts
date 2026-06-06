@@ -4,12 +4,19 @@ import { users } from "../db/schema/users";
 import { generateToken } from "../utils/jwt";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { authMiddleware } from "../middleware/auth";
 
 const auth = new Hono();
 
 /* =========================
    REGISTER
 ========================= */
+
+auth.get("/me", authMiddleware, async (c) => {
+  const user = c.get("user");
+  return c.json({ user });
+});
+
 auth.post("/register", async (c) => {
   const { username, email, password } = await c.req.json();
 

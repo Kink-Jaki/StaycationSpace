@@ -377,7 +377,7 @@ export default function BerandaUser() {
                 <CalendarCheck size={18} className="text-[#F59E0B]" />
                 Booking Saya
              </button>
-             <button onClick={() => navigate({ to: "/kupon_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
+             <button onClick={() => navigate({ to: "/promo_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
                 <Ticket size={18} className="text-[#F59E0B]" />
                 Kupon Promo
              </button>

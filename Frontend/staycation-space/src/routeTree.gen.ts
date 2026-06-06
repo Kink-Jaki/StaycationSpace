@@ -13,9 +13,9 @@ import { Route as TambahRouteImport } from './routes/tambah'
 import { Route as Space_adminRouteImport } from './routes/space_admin'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportRouteImport } from './routes/report'
+import { Route as Promo_userRouteImport } from './routes/promo_user'
 import { Route as PromoRouteImport } from './routes/promo'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as Kupon_userRouteImport } from './routes/kupon_user'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CustomerRouteImport } from './routes/customer'
 import { Route as Booking_userRouteImport } from './routes/booking_user'
@@ -43,6 +43,11 @@ const ReportRoute = ReportRouteImport.update({
   path: '/report',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Promo_userRoute = Promo_userRouteImport.update({
+  id: '/promo_user',
+  path: '/promo_user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PromoRoute = PromoRouteImport.update({
   id: '/promo',
   path: '/promo',
@@ -51,11 +56,6 @@ const PromoRoute = PromoRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Kupon_userRoute = Kupon_userRouteImport.update({
-  id: '/kupon_user',
-  path: '/kupon_user',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -95,9 +95,9 @@ export interface FileRoutesByFullPath {
   '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
-  '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/promo_user': typeof Promo_userRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -110,9 +110,9 @@ export interface FileRoutesByTo {
   '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
-  '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/promo_user': typeof Promo_userRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -126,9 +126,9 @@ export interface FileRoutesById {
   '/booking_user': typeof Booking_userRoute
   '/customer': typeof CustomerRoute
   '/dashboard': typeof DashboardRoute
-  '/kupon_user': typeof Kupon_userRoute
   '/login': typeof LoginRoute
   '/promo': typeof PromoRoute
+  '/promo_user': typeof Promo_userRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/space_admin': typeof Space_adminRoute
@@ -143,9 +143,9 @@ export interface FileRouteTypes {
     | '/booking_user'
     | '/customer'
     | '/dashboard'
-    | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/promo_user'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -158,9 +158,9 @@ export interface FileRouteTypes {
     | '/booking_user'
     | '/customer'
     | '/dashboard'
-    | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/promo_user'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -173,9 +173,9 @@ export interface FileRouteTypes {
     | '/booking_user'
     | '/customer'
     | '/dashboard'
-    | '/kupon_user'
     | '/login'
     | '/promo'
+    | '/promo_user'
     | '/report'
     | '/settings'
     | '/space_admin'
@@ -189,9 +189,9 @@ export interface RootRouteChildren {
   Booking_userRoute: typeof Booking_userRoute
   CustomerRoute: typeof CustomerRoute
   DashboardRoute: typeof DashboardRoute
-  Kupon_userRoute: typeof Kupon_userRoute
   LoginRoute: typeof LoginRoute
   PromoRoute: typeof PromoRoute
+  Promo_userRoute: typeof Promo_userRoute
   ReportRoute: typeof ReportRoute
   SettingsRoute: typeof SettingsRoute
   Space_adminRoute: typeof Space_adminRoute
@@ -229,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/promo_user': {
+      id: '/promo_user'
+      path: '/promo_user'
+      fullPath: '/promo_user'
+      preLoaderRoute: typeof Promo_userRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/promo': {
       id: '/promo'
       path: '/promo'
@@ -241,13 +248,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kupon_user': {
-      id: '/kupon_user'
-      path: '/kupon_user'
-      fullPath: '/kupon_user'
-      preLoaderRoute: typeof Kupon_userRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -301,9 +301,9 @@ const rootRouteChildren: RootRouteChildren = {
   Booking_userRoute: Booking_userRoute,
   CustomerRoute: CustomerRoute,
   DashboardRoute: DashboardRoute,
-  Kupon_userRoute: Kupon_userRoute,
   LoginRoute: LoginRoute,
   PromoRoute: PromoRoute,
+  Promo_userRoute: Promo_userRoute,
   ReportRoute: ReportRoute,
   SettingsRoute: SettingsRoute,
   Space_adminRoute: Space_adminRoute,
