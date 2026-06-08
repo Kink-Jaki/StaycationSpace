@@ -6,10 +6,8 @@ import {
   Search, Menu, XCircle, Loader2, AlertCircle, Mail, Phone,
   UserCheck, UserX, Eye, Trash2, RefreshCw,
 } from 'lucide-react'
- 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.127:3000'
  
 interface User {
   id: number
@@ -28,22 +26,12 @@ interface SidebarProps {
   setIsSidebarOpen: (open: boolean) => void
   setShowLogoutModal: (show: boolean) => void
 }
- 
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
- 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.189:3000'
- 
+  
 function getToken(): string { return localStorage.getItem('token') ?? '' }
 function authHeaders(): HeadersInit {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }
 }
- 
-// ─────────────────────────────────────────────
-// API
-// ─────────────────────────────────────────────
- 
+  
 async function apiFetchUsers(): Promise<User[]> {
   const res = await fetch(`${BASE_URL}/users`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -58,10 +46,7 @@ async function apiDeleteUser(id: number): Promise<void> {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
 }
  
-// ─────────────────────────────────────────────
 // Toast
-// ─────────────────────────────────────────────
- 
 type ToastType = 'success' | 'error' | 'info'
 interface ToastState { message: string; type: ToastType; visible: boolean }
  
@@ -84,10 +69,7 @@ function Toast({ toast }: { toast: ToastState }) {
   )
 }
  
-// ─────────────────────────────────────────────
-// Delete Modal
-// ─────────────────────────────────────────────
- 
+// Delete Modal 
 function DeleteModal({ user, onClose, onConfirm }: { user: User; onClose: () => void; onConfirm: () => Promise<void> }) {
   const [loading, setLoading] = useState(false)
   const displayName = user.username || user.name || 'Pengguna'
@@ -124,10 +106,7 @@ function DeleteModal({ user, onClose, onConfirm }: { user: User; onClose: () => 
   )
 }
  
-// ─────────────────────────────────────────────
 // Detail Modal
-// ─────────────────────────────────────────────
- 
 function DetailModal({ user, onClose }: { user: User; onClose: () => void }) {
   const displayName = user.username || user.name || 'Pengguna'
   const displayRole = user.role === 'user' ? 'customer' : user.role
@@ -198,10 +177,7 @@ function DetailModal({ user, onClose }: { user: User; onClose: () => void }) {
   )
 }
  
-// ─────────────────────────────────────────────
 // Sidebar
-// ─────────────────────────────────────────────
- 
 function Sidebar({ activeTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: SidebarProps) {
   const username = localStorage.getItem('username') ?? 'Admin Staycation'
   const role = localStorage.getItem('role') ?? 'admin'
@@ -260,10 +236,7 @@ function Sidebar({ activeTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModa
   )
 }
  
-// ─────────────────────────────────────────────
 // Main Page
-// ─────────────────────────────────────────────
- 
 export const Route = createFileRoute('/customer')({
 
   beforeLoad: () => {

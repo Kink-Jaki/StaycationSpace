@@ -4,7 +4,7 @@ import {
   MapPin, Building2, Phone, Mail, Check, ShieldCheck, X, Calendar, Clock, User as UserIcon, Star, ArrowLeft, AlertCircle
 } from 'lucide-react';
 
-const API_BASE_URL = "http://192.168.111.189:3000"; 
+const API_BASE_URL = "http://192.168.111.127:3000"; 
 
 export const Route = createFileRoute('/booking_user')({
   component: BookingUser,
@@ -125,7 +125,6 @@ export default function BookingUser() {
     try {
       const token = localStorage.getItem("token");
       
-      // Sesuaikan Method dan Endpoint ini dengan API backend Anda (Bisa DELETE atau PATCH status)
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingToCancel.id}`, {
         method: 'DELETE', 
         headers: {

@@ -6,11 +6,9 @@ import {
   Search, Menu, XCircle, Plus, Edit2, Trash2, ToggleLeft, ToggleRight,
   Tag, Loader2, X, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react'
- 
-// ─────────────────────────────────────────────
-// Types — disesuaikan dengan schema backend
-// ─────────────────────────────────────────────
- 
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.127:3000'
+  
 interface Promo {
   id: number
   code: string
@@ -48,22 +46,13 @@ const EMPTY_FORM: PromoForm = {
   expiresAt: '',
   isActive: true,
 }
- 
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
- 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.189:3000'
- 
+  
 function getToken(): string { return localStorage.getItem('token') ?? '' }
 function authHeaders(): HeadersInit {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }
 }
  
-// ─────────────────────────────────────────────
-// API — disesuaikan dengan endpoint backend
-// ─────────────────────────────────────────────
- 
+// API — disesuaikan dengan endpoint backend 
 async function apiFetchPromos(): Promise<Promo[]> {
   const res = await fetch(`${BASE_URL}/promos`, { headers: authHeaders() })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -101,10 +90,7 @@ async function apiDeletePromo(id: number): Promise<void> {
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
 }
  
-// ─────────────────────────────────────────────
 // Helpers
-// ─────────────────────────────────────────────
- 
 function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-ID') }
  
 function formatDate(iso: string | null): string {
@@ -124,10 +110,7 @@ function promoStatus(p: Promo): 'active' | 'inactive' | 'expired' | 'full' {
   return 'active'
 }
  
-// ─────────────────────────────────────────────
 // Toast
-// ─────────────────────────────────────────────
- 
 type ToastType = 'success' | 'error' | 'info'
 interface ToastState { message: string; type: ToastType; visible: boolean }
  
@@ -150,10 +133,7 @@ function Toast({ toast }: { toast: ToastState }) {
   )
 }
  
-// ─────────────────────────────────────────────
 // Status Badge
-// ─────────────────────────────────────────────
- 
 function PromoBadge({ status }: { status: 'active' | 'inactive' | 'expired' | 'full' }) {
   const map = {
     active:   { cls: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: <CheckCircle2 size={10} className="text-emerald-500" />, label: 'Aktif' },
@@ -169,10 +149,7 @@ function PromoBadge({ status }: { status: 'active' | 'inactive' | 'expired' | 'f
   )
 }
  
-// ─────────────────────────────────────────────
 // Promo Form Modal
-// ─────────────────────────────────────────────
- 
 function PromoModal({ mode, initial, onClose, onSave }: {
   mode: 'create' | 'edit'
   initial: PromoForm
@@ -284,10 +261,7 @@ function PromoModal({ mode, initial, onClose, onSave }: {
   )
 }
  
-// ─────────────────────────────────────────────
 // Delete Confirm Modal
-// ─────────────────────────────────────────────
- 
 function DeleteModal({ promo, onClose, onConfirm }: { promo: Promo; onClose: () => void; onConfirm: () => Promise<void> }) {
   const [loading, setLoading] = useState(false)
   async function confirm() {
@@ -322,10 +296,7 @@ function DeleteModal({ promo, onClose, onConfirm }: { promo: Promo; onClose: () 
   )
 }
  
-// ─────────────────────────────────────────────
 // Promo Card
-// ─────────────────────────────────────────────
- 
 function PromoCard({ promo, onEdit, onDelete, onToggle }: {
   promo: Promo
   onEdit: () => void
@@ -419,10 +390,7 @@ function PromoCard({ promo, onEdit, onDelete, onToggle }: {
   )
 }
  
-// ─────────────────────────────────────────────
 // Sidebar — dari dashboard.tsx
-// ─────────────────────────────────────────────
- 
 function Sidebar({ activeTab, isSidebarOpen, setShowLogoutModal }: SidebarProps) {
   const username = localStorage.getItem('username') ?? 'Admin Staycation'
   const role = localStorage.getItem('role') ?? 'admin'
@@ -482,10 +450,7 @@ function Sidebar({ activeTab, isSidebarOpen, setShowLogoutModal }: SidebarProps)
   )
 }
  
-// ─────────────────────────────────────────────
-// Main Page
-// ─────────────────────────────────────────────
- 
+// Main 
 export const Route = createFileRoute('/promo')({
 
   beforeLoad: () => {

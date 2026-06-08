@@ -6,6 +6,8 @@ import {
   Search, Menu, RefreshCw, Wallet, FileSpreadsheet, FileText
 } from 'lucide-react'
 import { redirect } from '@tanstack/react-router'
+
+let detectedApiUrl = 'http://192.168.111.127:3000'
  
 interface ReportSummary {
   totalBookings: number
@@ -52,7 +54,6 @@ if (typeof window !== 'undefined') {
   }
 }
  
-let detectedApiUrl = 'http://192.168.111.189:3000'
 try {
   const metaEnv = (import.meta as any)?.env
   if (metaEnv && metaEnv.VITE_API_URL) {
@@ -263,9 +264,7 @@ export default function ReportAdmin() {
     )
   })
  
-  // ========================================
   // EXPORT CSV
-  // ========================================
   const exportCSV = () => {
     const headers = ['ID Booking', 'Penyewa', 'Space Unit', 'Tanggal Sewa', 'Total Harga', 'Status']
  
@@ -292,9 +291,7 @@ export default function ReportAdmin() {
     showToast('CSV berhasil diunduh.', 'success')
   }
  
-  // ========================================
   // EXPORT PDF
-  // ========================================
   const exportPDF = () => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {

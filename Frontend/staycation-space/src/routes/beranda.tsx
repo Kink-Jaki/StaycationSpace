@@ -4,7 +4,7 @@ import {
   Search, MapPin, ArrowRight, Building2, Ticket, CalendarCheck, Phone, Mail, X, Check, Calendar, Clock, AlertCircle, Sparkles
 } from 'lucide-react';
 
-const API_BASE_URL = "http://192.168.111.189:3000";
+const API_BASE_URL = "http://192.168.111.127:3000";
 
 interface Space {
   id: number;
@@ -17,43 +17,6 @@ interface Space {
   address: string;
   status: string;
 }
-
-
-const FALLBACK_SPACES: Space[] = [
-  {
-    id: 101,
-    name: 'Studio Santai',
-    type: 'studio',
-    description: 'Studio nyaman untuk produksi konten dan rapat kreatif.',
-    pricePerHour: '120000',
-    deposit: '50000',
-    capacity: 6,
-    address: 'Jalan Sudirman No. 20, Jakarta',
-    status: 'active',
-  },
-  {
-    id: 102,
-    name: 'Villa Serene',
-    type: 'villa',
-    description: 'Villa eksklusif dengan kolam renang pribadi untuk acara santai.',
-    pricePerHour: '350000',
-    deposit: '150000',
-    capacity: 15,
-    address: 'Jalan Puncak Indah No. 5, Bogor',
-    status: 'active',
-  },
-  {
-    id: 103,
-    name: 'Hall Megah',
-    type: 'hall',
-    description: 'Ruang serbaguna luas untuk seminar, workshop, dan pertemuan besar.',
-    pricePerHour: '500000',
-    deposit: '200000',
-    capacity: 80,
-    address: 'Jalan Merdeka No. 10, Bandung',
-    status: 'active',
-  }
-];
 
 export const Route = createFileRoute('/beranda')({
 
@@ -196,7 +159,8 @@ export default function BerandaUser() {
       setImageMap(imgs);
     } catch (error) {
       console.warn("Menggunakan data cadangan karena kendala koneksi API:", error);
-      setProperties(FALLBACK_SPACES);
+      setProperties([]);
+      setImageMap({});
     }
   };
 
@@ -738,33 +702,33 @@ export default function BerandaUser() {
 
                 {/* Total Bayar Preview */}
                 <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-amber-100">
-  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm">
 
-    <div className="flex justify-between">
-      <span>Harga Sewa</span>
-      <span>
-        Rp {priceInfo.subtotal.toLocaleString("id-ID")}
-      </span>
-    </div>
+                    <div className="flex justify-between">
+                      <span>Harga Sewa</span>
+                      <span>
+                        Rp {priceInfo.subtotal.toLocaleString("id-ID")}
+                      </span>
+                    </div>
 
-    {priceInfo.discount > 0 && (
-      <div className="flex justify-between text-emerald-600">
-        <span>Diskon Promo</span>
-        <span>
-          - Rp {priceInfo.discount.toLocaleString("id-ID")}
-        </span>
-      </div>
-    )}
+                    {priceInfo.discount > 0 && (
+                      <div className="flex justify-between text-emerald-600">
+                        <span>Diskon Promo</span>
+                        <span>
+                          - Rp {priceInfo.discount.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    )}
 
-    <div className="border-t pt-2 flex justify-between font-bold text-lg">
-      <span>Total Bayar</span>
-      <span>
-        Rp {priceInfo.total.toLocaleString("id-ID")}
-      </span>
-    </div>
+                    <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                      <span>Total Bayar</span>
+                      <span>
+                        Rp {priceInfo.total.toLocaleString("id-ID")}
+                      </span>
+                    </div>
 
-  </div>
-</div>
+                  </div>
+                </div>
 
                 {/* Tombol Aksi */}
                 <div className="pt-2 flex gap-3">
