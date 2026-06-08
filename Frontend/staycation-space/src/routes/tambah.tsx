@@ -409,32 +409,13 @@ export function TambahSpace() {
                   </label>
 
                   <div className="mt-2">
-                    <select
-                      name="kategori"
-                      value={formData.kategori}
-                      onChange={handleChange}
-                      required
-                      className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                    >
-                      <option value="">
-                        Pilih kategori
-                      </option>
-
-                      <option value="studio">
-                        Studio 
-                      </option>
-
-                      <option value="hall">
-                        hall
-                      </option>
-
-                      <option value="villa">
-                        Villa
-                      </option>
-
-                      <option value="other">
-                        Lainnya
-                      </option>
+                    <select name="kategori" value={formData.kategori} onChange={handleChange} required
+                      className="block w-full rounded-xl bg-zinc-50 px-4 py-2 text-zinc-900 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                      <option value="">Pilih kategori</option>
+                      <option value="studio">Studio</option>
+                      <option value="hall">hall</option>
+                      <option value="villa">Villa</option>
+                      <option value="other">Lainnya</option>
                     </select>
                   </div>
                 </div>

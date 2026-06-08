@@ -10,7 +10,6 @@ import {
   LogOut,
   Settings,
   Percent,
-  ArrowLeft,
   ChevronDown,
   Upload,
   X,
@@ -324,14 +323,6 @@ export function EditSpace() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-6 py-8">
 
-          {/* Back + Title */}
-          <button
-            onClick={() => (window.location.href = '/space_admin')}
-            className="flex items-center gap-2 text-zinc-400 hover:text-zinc-900 mb-6 font-medium transition-colors text-sm"
-          >
-            <ArrowLeft size={18} /> Kembali ke daftar
-          </button>
-
           <div className="mb-8">
             <h1 className="text-2xl font-extrabold text-zinc-900">Edit Properti</h1>
             <p className="text-zinc-400 text-sm mt-1">Perbarui informasi, foto, dan harga space Anda.</p>
@@ -361,11 +352,13 @@ export function EditSpace() {
 
                   {/* Kategori */}
                   <div className="sm:col-span-3">
-                    <label htmlFor="kategori" className={labelClass}>Kategori</label>
+                    <label htmlFor='kategori' className={labelClass}>Kategori</label>
                     <select id="kategori" className={inputClass} required {...field('kategori')}>
-                      <option value="studio">Studio Foto</option>
+                      <option value="">Pilih kategori</option>
+                      <option value="studio">Studio</option>
+                      <option value="hall">hall</option>
                       <option value="villa">Villa</option>
-                      <option value="hall">Coworking Space</option>
+                      <option value="other">Lainnya</option>
                     </select>
                   </div>
 
@@ -490,7 +483,7 @@ export function EditSpace() {
                         {...field('hargaDasar')}
                       />
                     </div>
-                    <p className="text-xs text-zinc-400 mt-1.5">Tarif standar hari kerja (Senin–Jumat)</p>
+                    <p className="text-xs text-zinc-400 mt-1.5">Harga berdasarkan hitungan per jam</p>
                   </div>
                   <div>
                     <label htmlFor="depositJaminan" className={labelClass}>Deposit Jaminan (IDR)</label>
@@ -549,14 +542,6 @@ export function EditSpace() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes slide-in {
-          from { opacity: 0; transform: translateY(-12px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-slide-in { animation: slide-in 0.25s ease; }
-      `}</style>
     </div>
   );
 }
