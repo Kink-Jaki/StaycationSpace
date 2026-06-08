@@ -10,7 +10,6 @@ import {
   MapPin,
   Mail,
   Phone,
-  ShieldCheck,
   Star,
   User as UserIcon,
   X,
@@ -183,11 +182,6 @@ export default function BookingUser() {
           <div>
             <h2 className="text-3xl font-extrabold text-gray-950 mb-2">Booking Saya</h2>
             <p className="text-gray-500">Pantau status transaksi, lakukan pembayaran, dan beri ulasan di sini.</p>
-          </div>
-
-          <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 px-5 py-3 rounded-2xl">
-            <ShieldCheck className="text-amber-600" size={24} />
-            <span className="text-sm font-semibold text-amber-900">Sistem reservasi aman 100% dengan garansi uang kembali</span>
           </div>
         </div>
 

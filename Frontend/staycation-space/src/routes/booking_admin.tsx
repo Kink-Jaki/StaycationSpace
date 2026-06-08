@@ -116,8 +116,8 @@ function normalizeBooking(raw: any): Booking {
  
   return {
     id: raw.id,
-    spaceId: raw.spaceId ?? raw.space_id ?? 0,
-    userId: raw.userId ?? raw.user_id ?? 0,
+    spaceId: Number(raw.spaceId ?? raw.space_id ?? 0),
+    userId: Number(raw.userId ?? raw.user_id ?? 0),
     // Fallback: tampilkan ID sampai data enrichment selesai
     spaceName: raw.space?.name ?? raw.spaceName ?? `Space #${raw.spaceId ?? '?'}`,
     customerName:
@@ -138,15 +138,50 @@ function normalizeBooking(raw: any): Booking {
 }
  
 // API helpers
-async function apiFetchBookings(): Promise<Booking[]> {
-  const res = await fetch(`${BASE_URL}/bookings`, { headers: authHeaders() });
+async function apiFetchUsers() {
+  const res = await fetch(`${BASE_URL}/users`, {
+    headers: authHeaders(),
+  });
+
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
   const data = await res.json();
-  // Response bisa: array langsung [] atau { data: [] } atau { bookings: [] }
-  const raw: any[] = Array.isArray(data)
+
+  return Array.isArray(data)
     ? data
-    : (data.data ?? data.bookings ?? []);
-  return raw.map(normalizeBooking);
+    : (data.data ?? []);
+}
+
+async function apiFetchSpaces() {
+  const res = await fetch(`${BASE_URL}/spaces`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const data = await res.json();
+
+  return Array.isArray(data)
+    ? data
+    : (data.data ?? []);
+}
+
+async function apiFetchBookings(): Promise<Booking[]> {
+  const res = await fetch(`${BASE_URL}/bookings`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  const list = Array.isArray(data)
+    ? data
+    : (data.data ?? []);
+
+  return list.map(normalizeBooking);
 }
  
 /**
@@ -681,6 +716,8 @@ export function BookingAdmin() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [usersMap, setUsersMap] = useState<Map<number, string>>(new Map());
+  const [spacesMap, setSpacesMap] = useState<Map<number, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const today = new Date();
@@ -691,11 +728,62 @@ export function BookingAdmin() {
   const { toast, show: showToast } = useToast();
  
   useEffect(() => {
-    apiFetchBookings()
-      .then(data => setBookings(data))
-      .catch(() => showToast('Gagal memuat data booking.', 'error'))
-      .finally(() => setLoading(false));
-  }, []);
+  async function loadData() {
+    try {
+      const [bookingsData, users, spaces] =
+        await Promise.all([
+          apiFetchBookings(),
+          apiFetchUsers(),
+          apiFetchSpaces(),
+        ]);
+
+      const userMap = new Map<number, string>(
+        users.map((u: any) => [
+          Number(u.id),
+          String(u.username ?? u.name ?? 'Unknown')
+        ])
+      );
+
+      const spaceMap = new Map<number, string>(
+        spaces.map((s: any) => [
+          Number(s.id),
+          String(s.name ?? '')
+        ])
+      );
+
+      setUsersMap(userMap);
+      setSpacesMap(spaceMap);
+
+      const enrichedBookings = bookingsData.map((b: Booking) => ({
+        ...b,
+        customerName:
+          userMap.get(b.userId) ??
+          b.customerName,
+
+        spaceName:
+          spaceMap.get(b.spaceId) ??
+          b.spaceName,
+      }));
+
+      console.log("BOOKINGS", bookingsData);
+      console.log("USERS", users);
+      console.log("SPACES", spaces);
+      console.log("ENRICHED", enrichedBookings);
+
+      setBookings(enrichedBookings);
+
+    } catch (err) {
+      showToast(
+        'Gagal memuat data booking.',
+        'error'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadData();
+}, []);
  
   async function handleApprove(b: Booking) {
     const payment = b.paymentId ? null : await apiFetchPaymentByBookingId(b.id);
