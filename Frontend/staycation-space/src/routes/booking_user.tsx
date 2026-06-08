@@ -33,6 +33,7 @@ export default function BookingUser() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [bookingToCancel, setBookingToCancel] = useState<any | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<number[]>([])
 
   useEffect(() => {
     fetchBookings()
@@ -52,6 +53,20 @@ export default function BookingUser() {
       const data = await res.json()
       console.log('BOOKINGS =', data)
       setBookings(data)
+
+      const reviewRes = await fetch(`${API_BASE_URL}/reviews`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (reviewRes.ok) {
+        const reviews = await reviewRes.json()
+
+        setReviewedBookingIds(
+          reviews.map((review: any) => review.bookingId)
+        )
+      }
 
       const names: Record<number, string> = {}
       await Promise.all(
@@ -261,7 +276,8 @@ export default function BookingUser() {
                         <X size={18} />
                       </button>
                     </>
-                  ) : booking.status === 'verified' ? (
+                  ) : booking.status === 'verified' &&
+                      !reviewedBookingIds.includes(booking.id) ? (
                     <button
                       onClick={() => {
                         window.location.href = `/rating_ulasan?bookingId=${booking.id}&spaceId=${booking.spaceId}`
