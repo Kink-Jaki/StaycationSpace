@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "../db";
 import { payments } from "../db/schema/payments";
 import { bookings } from "../db/schema/bookings";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { mkdir, writeFile } from "fs/promises";
 
 import { authMiddleware } from "../middleware/auth";
@@ -100,7 +100,8 @@ app.get("/",authMiddleware, async (c) => {
       .where(eq(payments.bookingId, bookingId))
     : await db
       .select()
-      .from(payments);
+      .from(payments)
+      .orderBy(sql`created_at DESC`);
 
   return c.json(data);
 });
@@ -115,7 +116,8 @@ app.get("/:id",authMiddleware, async (c) => {
   const data = await db
     .select()
     .from(payments)
-    .where(eq(payments.id, id));
+    .where(eq(payments.id, id))
+    .orderBy(sql`created_at DESC`);
 
   if (!data[0]) {
     return c.json(
@@ -137,7 +139,8 @@ app.get("/status/:status",authMiddleware, async (c) => {
   const data = await db
     .select()
     .from(payments)
-    .where(eq(payments.status, status as any));
+    .where(eq(payments.status, status as any))
+    .orderBy(sql`created_at DESC`);
 
   return c.json(data);
 });

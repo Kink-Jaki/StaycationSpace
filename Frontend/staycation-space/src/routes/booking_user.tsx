@@ -16,11 +16,9 @@ import {
   X,
 } from 'lucide-react'
 
-<<<<<<< HEAD
-const API_BASE_URL = 'http://192.168.111.189:3000'
-=======
+
 const API_BASE_URL = "http://192.168.111.127:3000"; 
->>>>>>> 6e8be92da8e36f7a6e664437e7879f0d586e6620
+
 
 export const Route = createFileRoute('/booking_user')({
   component: BookingUser,
@@ -125,13 +123,8 @@ export default function BookingUser() {
     setIsCancelling(true)
 
     try {
-<<<<<<< HEAD
       const token = localStorage.getItem('token')
 
-=======
-      const token = localStorage.getItem("token");
-      
->>>>>>> 6e8be92da8e36f7a6e664437e7879f0d586e6620
       const res = await fetch(`${API_BASE_URL}/bookings/${bookingToCancel.id}`, {
         method: 'DELETE',
         headers: {

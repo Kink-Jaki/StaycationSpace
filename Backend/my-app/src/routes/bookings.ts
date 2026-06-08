@@ -197,7 +197,8 @@ app.get("/", async (c) => {
     : await db
       .select()
       .from(bookings)
-      .where(eq(bookings.userId, user.id));
+      .where(eq(bookings.userId, user.id))
+      .orderBy(sql`created_at DESC`);
 
   return c.json(data);
 });
@@ -211,7 +212,8 @@ app.get("/:id", async (c) => {
   const data = await db
     .select()
     .from(bookings)
-    .where(eq(bookings.id, id));
+    .where(eq(bookings.id, id))
+    .orderBy(sql`created_at DESC`);
 
   if (!data[0]) {
     return c.json(
