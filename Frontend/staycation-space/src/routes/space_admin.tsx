@@ -19,7 +19,7 @@ import {
   Search,
 } from "lucide-react";
  
-const API_BASE_URL = "http://192.168.111.189:3000";
+const API_BASE_URL = "http://192.168.111.127:3000";
  
 interface Space {
   id: number;
@@ -33,7 +33,7 @@ interface Space {
   status: string;
 }
  
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
+//Sidebar 
 function Sidebar({
   isSidebarOpen,
   setShowLogoutModal,
@@ -60,8 +60,7 @@ function Sidebar({
     <aside
       className={`fixed inset-y-0 left-0 z-40 w-64 lg:w-72 bg-[#121212] text-zinc-300 p-4 lg:p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0 shrink-0 border-r border-zinc-900 ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      }`}
-    >
+      }`}>
       <div className="flex flex-col h-full justify-between">
         <div>
  
@@ -128,7 +127,7 @@ function Sidebar({
   );
 }
  
-// ─── Route ────────────────────────────────────────────────────────────────────
+// Route
 export const Route = createFileRoute("/space_admin")({ 
 
   beforeLoad: () => {
@@ -153,7 +152,7 @@ export const Route = createFileRoute("/space_admin")({
   component: Space 
 });
  
-// ─── Main ─────────────────────────────────────────────────────────────────────
+//main
 export default function Space() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -275,19 +274,19 @@ export default function Space() {
  
         {/* Search */}
         <div className="mb-6 relative w-full lg:w-96">
-  <Search
-    size={18}
-    className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
-  />
+          <Search
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+          />
 
-  <input
-    type="text"
-    placeholder="Cari nama space..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
-  />
-</div>
+          <input
+            type="text"
+            placeholder="Cari nama space..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          />
+        </div>
  
         {/* Grid */}
         {loading ? (
@@ -369,7 +368,7 @@ export default function Space() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      {/* ✅ FIXED: passing space.id to URL */}
+                      {/*passing space.id to URL */}
                       <button
                         onClick={() => (window.location.href = `/edit/${space.id}`)}
                         className="p-2 rounded-lg border border-zinc-200 text-zinc-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
@@ -448,4 +447,4 @@ export default function Space() {
       )}
     </div>
   );
-}
+} 

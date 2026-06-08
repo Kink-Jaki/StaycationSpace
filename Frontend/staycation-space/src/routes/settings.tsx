@@ -4,10 +4,7 @@ import {
   Save, User, ArrowLeft
 } from 'lucide-react';
 
-const BASE_URL =
-  (import.meta as any)?.env?.VITE_API_URL ||
-  'http://192.168.111.189:3000'
-
+const BASE_URL ='http://192.168.111.127:3000'
 
 function getToken() {
   return localStorage.getItem('token') ?? ''
@@ -31,8 +28,7 @@ export const Route = createFileRoute('/settings')({
         to: "/login",
       });
     }
-  },
-  
+  }, 
     component: Settings,
 });
 

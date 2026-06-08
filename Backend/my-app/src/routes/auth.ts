@@ -8,9 +8,7 @@ import { authMiddleware } from "../middleware/auth";
 
 const auth = new Hono();
 
-/* =========================
-   REGISTER
-========================= */
+//register
 
 auth.get("/me", authMiddleware, async (c) => {
   const user = c.get("user");
@@ -50,9 +48,7 @@ auth.post("/register", async (c) => {
   return c.json({ message: "Register sukses" });
 });
 
-/* =========================
-   LOGIN (EMAIL + PASSWORD)
-========================= */
+//login email
 auth.post("/login", async (c) => {
   const { email, password } = await c.req.json();
 

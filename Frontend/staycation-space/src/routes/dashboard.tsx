@@ -18,15 +18,8 @@ import {
   Star,
 } from "lucide-react";
 
-// ========================================
-// CONFIG
-// ========================================
-const API_BASE_URL = "http://192.168.111.189:3000";
+const API_BASE_URL = "http://192.168.111.127:3000";
 
-
-// ========================================
-// TYPES
-// ========================================
 interface Stats {
   totalTempat: number;
   bookingTerverifikasi: number;
@@ -61,9 +54,6 @@ interface SidebarProps {
   setShowLogoutModal: (show: boolean) => void;
 }
 
-// ========================================
-// FORMAT
-// ========================================
 const formatRupiah = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -72,9 +62,6 @@ const formatRupiah = (value: number) => {
   }).format(value);
 };
 
-// ========================================
-// AUTH
-// ========================================
 const getToken = () => {
   return localStorage.getItem("token");
 };
@@ -93,9 +80,6 @@ const logout = () => {
   window.location.href = "/login";
 };
 
-// ========================================
-// API
-// ========================================
 const apiFetch = async (
   endpoint: string,
   options: RequestInit = {}
@@ -116,10 +100,7 @@ const apiFetch = async (
   return response;
 };
 
-// ─────────────────────────────────────────────
-// Sidebar
-// ─────────────────────────────────────────────
- 
+// Sidebar 
 function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, setShowLogoutModal }: SidebarProps) {
   const username = localStorage.getItem('username') ?? 'Admin Staycation';
   const role = localStorage.getItem('role') ?? 'admin';
@@ -178,9 +159,8 @@ function Sidebar({ activeTab, setActiveTab, isSidebarOpen, setIsSidebarOpen, set
     </aside>
   );
 }
-// ========================================
-// ROUTE
-// ========================================
+
+//route
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => {
     const token = localStorage.getItem("token");
@@ -204,9 +184,7 @@ export const Route = createFileRoute("/dashboard")({
   component: Home,
 });
 
-// ========================================
-// MAIN
-// ========================================
+//main
 export function Home() {
   const [activeTab, setActiveTab] =
     useState<string>("Dashboard");
@@ -235,9 +213,7 @@ export function Home() {
   const [bookingChart, setBookingChart] =
     useState<BookingChart[]>([]);
 
-  // ========================================
   // FETCH OVERVIEW
-  // ========================================
   const fetchOverview = async () => {
     try {
       const response = await apiFetch(
@@ -272,9 +248,7 @@ export function Home() {
     }
   };
 
-  // ========================================
   // FETCH CHART
-  // ========================================
   const fetchChart = async () => {
     try {
       const response = await apiFetch(
@@ -291,9 +265,7 @@ export function Home() {
     }
   };
 
-  // ========================================
   // INIT
-  // ========================================
   useEffect(() => {
     const token = getToken();
 
@@ -306,9 +278,7 @@ export function Home() {
     fetchChart();
   }, []);
 
-  // ========================================
   // STARS
-  // ========================================
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star

@@ -15,8 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-// URL Backend API disesuaikan agar langsung menuju ke alamat dasar tanpa /api
-const API_BASE_URL = "http://192.168.111.189:3000";
+const API_BASE_URL = "http://192.168.111.127:3000";
 
 // Definisi tipe data untuk Notifikasi agar aman dari error TypeScript
 interface AppNotification {
@@ -91,7 +90,6 @@ export default function Home() {
     try {
       if (activeTab === "login") {
         // --- PROSES LOGIN ---
-        // Mengarah ke http://192.168.111.191:3000/auth/login
         const response = await window.fetch(`${API_BASE_URL}/auth/login`, {
           method: "POST",
           headers: {

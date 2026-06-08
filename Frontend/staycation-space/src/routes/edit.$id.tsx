@@ -19,9 +19,9 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const API_BASE_URL = "http://192.168.111.189:3000";
+const API_BASE_URL = "http://192.168.111.127:3000";
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
+// Sidebar 
 const Sidebar = ({ isSidebarOpen, setShowLogoutModal }: any) => {
   const username = localStorage.getItem("username") || "User";
   const role = localStorage.getItem("role") || "user";
@@ -98,7 +98,7 @@ const Sidebar = ({ isSidebarOpen, setShowLogoutModal }: any) => {
   );
 };
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
+// Toast
 const Toast = ({ type, message, onClose }: { type: 'success' | 'error'; message: string; onClose: () => void }) => (
   <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold animate-slide-in ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
     {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
@@ -107,7 +107,7 @@ const Toast = ({ type, message, onClose }: { type: 'success' | 'error'; message:
   </div>
 );
 
-// ─── Route ────────────────────────────────────────────────────────────────────
+// Route 
 export const Route = createFileRoute('/edit/$id')({
 
   beforeLoad: () => {
@@ -132,7 +132,7 @@ export const Route = createFileRoute('/edit/$id')({
   component: EditSpace,
 });
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// Main 
 export function EditSpace() {
   const { id } = Route.useParams();
   const token = localStorage.getItem("token");
@@ -167,7 +167,7 @@ export function EditSpace() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // ── Fetch space data on mount ──
+  // Fetch space data on mount
   useEffect(() => {
     const getSpace = async () => {
       try {
@@ -205,7 +205,7 @@ export function EditSpace() {
     getSpace();
   }, [id]);
 
-  // ── Handle file select ──
+  // Handle file select 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -227,7 +227,7 @@ export function EditSpace() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ── Submit ──
+  // Submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
@@ -246,7 +246,6 @@ export function EditSpace() {
       const res = await fetch(`${API_BASE_URL}/spaces/${id}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
-        // Jangan set Content-Type manual — browser isi boundary FormData otomatis
         body: spaceForm,
       });
 
@@ -256,19 +255,19 @@ export function EditSpace() {
       }
 
      if (imageFile) {
-  const imgForm = new FormData();
-  imgForm.append("files", imageFile);
+    const imgForm = new FormData();
+    imgForm.append("files", imageFile);
 
-  const imgRes = await fetch(
-    `${API_BASE_URL}/spaces/${id}/images`,
-    {
-      method: "PUT", // endpoint replace image
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: imgForm,
-    }
-  );
+    const imgRes = await fetch(
+      `${API_BASE_URL}/spaces/${id}/images`,
+      {
+        method: "PUT", // endpoint replace image
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: imgForm,
+      }
+    );
 
   if (!imgRes.ok) {
     const errBody = await imgRes.text();

@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 
 const CustomersRoute = new Hono();
 
-// GET: Mengambil semua user
+//get daa user
 CustomersRoute.get('/', async (c) => {
   try {
     const allUsers = await db.select().from(users);
@@ -15,7 +15,7 @@ CustomersRoute.get('/', async (c) => {
   }
 });
 
-// DELETE: Menghapus user berdasarkan ID
+//menghapus data user dari id
 CustomersRoute.delete('/:id', async (c) => {
   const id = parseInt(c.req.param('id'));
 

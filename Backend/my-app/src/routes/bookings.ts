@@ -11,9 +11,7 @@ const app = new Hono();
 app.use(authMiddleware);
 
 
-// =========================
-// CREATE BOOKING
-// =========================
+//create booking
 app.post("/", async (c) => {
   const body = await c.req.json();
   const user = c.get("user");
@@ -84,9 +82,7 @@ app.post("/", async (c) => {
 
   let promoData = null;
 
-  // =========================
-  // APPLY PROMO
-  // =========================
+//promo
   if (promoId) {
     promoData = await db.query.promos.findFirst({
       where: (p, { eq }) =>
@@ -157,9 +153,7 @@ app.post("/", async (c) => {
     }
   }
 
-  // =========================
-  // CREATE BOOKING
-  // =========================
+ //create booking
   const booking = await db
     .insert(bookings)
     .values({
@@ -174,9 +168,7 @@ app.post("/", async (c) => {
     })
     .returning();
 
-  // =========================
-  // UPDATE PROMO USAGE
-  // =========================
+//promo count
   if (promoData) {
     await db
       .update(promos)
@@ -196,9 +188,7 @@ app.post("/", async (c) => {
 });
 
 
-// =========================
-// GET BOOKINGS
-// =========================
+// read booking
 app.get("/", async (c) => {
   const user = c.get("user");
 
@@ -213,9 +203,7 @@ app.get("/", async (c) => {
 });
 
 
-// =========================
-// GET BOOKING BY ID
-// =========================
+//read booking by id
 app.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const user = c.get("user");
@@ -243,9 +231,7 @@ app.get("/:id", async (c) => {
 });
 
 
-// =========================
-// UPDATE BOOKING STATUS
-// =========================
+//update status
 app.patch("/:id/status", adminOnly, async (c) => {
   const id = Number(c.req.param("id"));
 
@@ -263,9 +249,7 @@ app.patch("/:id/status", adminOnly, async (c) => {
 });
 
 
-// =========================
-// CHECK AVAILABILITY
-// =========================
+//cek ketersediaan space
 app.get("/availability/check", async (c) => {
   const spaceId = Number(c.req.query("spaceId"));
 
@@ -299,9 +283,7 @@ app.get("/availability/check", async (c) => {
 });
 
 
-// =========================
-// DELETE BOOKING
-// =========================
+//Delete booking
 app.delete("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const user = c.get("user");

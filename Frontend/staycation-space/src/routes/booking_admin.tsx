@@ -24,23 +24,19 @@ import {
   FileText,
 } from 'lucide-react';
  
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
- 
 type BookingStatus = 'Dikonfirmasi' | 'Menunggu' | 'Dibatalkan';
  
 interface Booking {
   id: number;
   spaceId: number;
   userId: number;
-  spaceName: string;       // diisi dari lookup /spaces/:id (jika tersedia)
-  customerName: string;    // diisi dari lookup /users/:id (jika tersedia)
-  date: string;            // YYYY-MM-DD dari startTime
-  timeSlot: string;        // "HH:MM - HH:MM" dari startTime + endTime
+  spaceName: string;       
+  customerName: string;    
+  date: string;
+  timeSlot: string;        
   amount: number;
   status: BookingStatus;
-  rawStatus: string;       // status asli API: verified | pending | cancelled
+  rawStatus: string;       
   notes: string;
   paymentId: string | null;
   createdAt: string;
@@ -57,12 +53,8 @@ interface Payment {
   bookingId?: number;
   booking_id?: number;
 }
- 
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
- 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.189:3000';
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.127:3000';
  
 function getToken(): string {
   return localStorage.getItem('token') ?? '';
@@ -75,13 +67,6 @@ function authHeaders(): HeadersInit {
   };
 }
  
-// ─────────────────────────────────────────────
-// Normalisasi response API
-// ─────────────────────────────────────────────
- 
-/**
- * Mapping status English dari API → label Indonesia untuk UI
- */
 function mapStatus(raw: string): BookingStatus {
   switch ((raw ?? '').toLowerCase()) {
     case 'verified':
@@ -152,10 +137,7 @@ function normalizeBooking(raw: any): Booking {
   };
 }
  
-// ─────────────────────────────────────────────
 // API helpers
-// ─────────────────────────────────────────────
- 
 async function apiFetchBookings(): Promise<Booking[]> {
   const res = await fetch(`${BASE_URL}/bookings`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -241,10 +223,7 @@ function proofImageUrl(payment: Payment): string | null {
   return path.startsWith('http') ? path : `${BASE_URL}${path.startsWith('/') ? path : '/' + path}`;
 }
  
-// ─────────────────────────────────────────────
 // Helpers
-// ─────────────────────────────────────────────
- 
 const MONTH_NAMES = [
   'Januari','Februari','Maret','April','Mei','Juni',
   'Juli','Agustus','September','Oktober','November','Desember',
@@ -269,10 +248,7 @@ function buildDateKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 }
  
-// ─────────────────────────────────────────────
 // Toast
-// ─────────────────────────────────────────────
- 
 type ToastType = 'success' | 'error' | 'info';
 interface ToastState { message: string; type: ToastType; visible: boolean; }
  
@@ -295,10 +271,7 @@ function Toast({ toast }: { toast: ToastState }) {
   );
 }
  
-// ─────────────────────────────────────────────
 // Proof Modal
-// ─────────────────────────────────────────────
- 
 interface ProofTarget {
   bookingId: number;
   paymentId: string | null;
@@ -402,10 +375,7 @@ function ProofModal({ target, onClose }: { target: ProofTarget | null; onClose: 
   );
 }
  
-// ─────────────────────────────────────────────
 // Status Badge
-// ─────────────────────────────────────────────
- 
 function StatusBadge({ status }: { status: BookingStatus }) {
   const map = {
     Dikonfirmasi: { cls: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: <CheckCircle2 size={11} className="text-emerald-500" /> },
@@ -420,10 +390,7 @@ function StatusBadge({ status }: { status: BookingStatus }) {
   );
 }
  
-// ─────────────────────────────────────────────
 // Booking Card
-// ─────────────────────────────────────────────
- 
 interface BookingCardProps {
   booking: Booking;
   onApprove: (b: Booking) => Promise<void>;
@@ -513,10 +480,7 @@ function BookingCard({ booking: b, onApprove, onReject, onViewProof }: BookingCa
   );
 }
  
-// ─────────────────────────────────────────────
 // Calendar
-// ─────────────────────────────────────────────
- 
 function BookingCalendar({
   bookings, selectedDate, onSelectDate,
 }: {
@@ -623,10 +587,7 @@ function BookingCalendar({
   );
 }
  
-// ─────────────────────────────────────────────
 // Sidebar
-// ─────────────────────────────────────────────
- 
 function Sidebar({ isSidebarOpen, setIsSidebarOpen: _setIsSidebarOpen, setShowLogoutModal }: {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (v: boolean) => void;
@@ -691,10 +652,7 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen: _setIsSidebarOpen, setShowLo
   );
 }
  
-// ─────────────────────────────────────────────
-// Main Page
-// ─────────────────────────────────────────────
- 
+// Main  
 export const Route = createFileRoute('/booking_admin')({
 
   beforeLoad: () => {
