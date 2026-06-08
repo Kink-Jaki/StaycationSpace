@@ -1,21 +1,21 @@
 import { Hono } from 'hono';
 import { db } from '../db'; // Sesuaikan dengan path file konfigurasi db Anda
 import { users } from '../db/schema'; // Sesuaikan dengan path file skema Anda
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 const CustomersRoute = new Hono();
 
-// GET: Mengambil semua user
+//get daa user
 CustomersRoute.get('/', async (c) => {
   try {
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
     return c.json(allUsers);
   } catch (error) {
     return c.json({ error: "Gagal mengambil data user" }, 500);
   }
 });
 
-// DELETE: Menghapus user berdasarkan ID
+//menghapus data user dari id
 CustomersRoute.delete('/:id', async (c) => {
   const id = parseInt(c.req.param('id'));
 

@@ -40,18 +40,18 @@ analytics.get("/overview", async (c) => {
 
   // rating & ulasan terakhir
   const latestReviews = await db
-    .select({
-      id: reviews.id,
-      rating: reviews.rating,
-      comment: reviews.comment,
-      userId: reviews.userId,
-      userName: users.username,
-      createdAt: reviews.createdAt,
-    })
-    .from(reviews)
-    .leftJoin(users, eq(reviews.userId, users.id))
-    .orderBy(desc(reviews.createdAt))
-    .limit(5);
+  .select({
+    id: reviews.id,
+    rating: reviews.rating,
+    comment: reviews.comment,
+    createdAt: reviews.createdAt,
+    userId: reviews.userId,
+    userName: users.username,  // ambil dari tabel users
+  })
+  .from(reviews)
+  .leftJoin(users, sql`${reviews.userId} = ${users.id}`)  // join ke users
+  .orderBy(desc(reviews.createdAt))
+  .limit(5);
 
   return c.json({
     totalSpaces: totalSpaces[0].count,
