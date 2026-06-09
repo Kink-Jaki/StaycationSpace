@@ -533,9 +533,6 @@ export function Home() {
                         <p className="text-sm font-bold text-zinc-900">
                           {review.userName || review.username || `User #${review.userId ?? "-"}`}
                         </p>
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                          Pengirim Review
-                        </p>
                       </div>
 
                       <div className="flex gap-1">
