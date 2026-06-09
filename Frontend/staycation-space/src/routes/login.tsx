@@ -536,39 +536,11 @@ export default function Home() {
                 )}
               </button>
             </form>
-
-            {/* Tautan Navigasi Cepat Tambahan di Bawah Form */}
-            <div className="text-center pt-2">
-              {activeTab === "login" ? (
-                <p className="text-xs text-neutral-500">
-                  Belum punya akun?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("register")}
-                    className="text-amber-600 hover:text-amber-700 font-semibold underline focus:outline-none"
-                  >
-                    Daftar di Sini
-                  </button>
-                </p>
-              ) : (
-                <p className="text-xs text-neutral-500">
-                  Sudah memiliki akun?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("login")}
-                    className="text-amber-600 hover:text-amber-700 font-semibold underline focus:outline-none"
-                  >
-                    Login di Sini
-                  </button>
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Footer Panel Kanan */}
           <footer className="text-[11px] text-neutral-400 text-center mt-6 pt-4 border-t border-neutral-100 w-full max-w-[380px]">
-            Staycation Space © 2026. Dibuat dengan{" "}
-            <span className="text-rose-400">❤️</span>.
+            Staycation Space © 2026. Dibuat dengan Nata dan Zaki
           </footer>
         </div>
       </div>

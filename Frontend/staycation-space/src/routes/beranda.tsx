@@ -11,8 +11,8 @@ interface Space {
   name: string;
   type: string;
   description: string;
-  pricePerHour: string;
-  deposit: string;
+  pricePerHour: number;
+  deposit: number;
   capacity: number;
   address: string;
   status: string;
@@ -344,7 +344,7 @@ export default function BerandaUser() {
               WEEKEND SPECIAL DEALS
             </span>
             <h2 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-              Temukan Studio, Villa &<br />Coworking Impianmu!
+              Temukan Studio, Villa, <br />Hall & Ruangan Terbaik dengan Mudah!
             </h2>
             <p className="text-gray-400 text-sm md:text-base mb-8 max-w-lg">
               Temukan dan gunakan kode promo yang tersedia untuk menikmati berbagai potongan harga.
@@ -451,8 +451,13 @@ export default function BerandaUser() {
                     <div>
                       <p className="text-xs text-gray-400 font-bold mb-1">TARIF MULAI</p>
                       <p className="font-extrabold text-lg">
-                        Rp {Number(property.pricePerHour).toLocaleString("id-ID")} <span className="text-xs font-normal text-gray-500">/ jam</span>
-                      </p>
+                          Rp {Number(property.pricePerHour).toLocaleString("id-ID")}{" "}
+                          <span className="text-xs font-normal text-gray-500">/ jam</span>
+                        </p>
+
+                        <p className="text-[10px] text-gray-400 mt-0.5">
+                          Deposit jaminan: Rp {Number(property.deposit).toLocaleString("id-ID")}
+                        </p>
                     </div>
                     <button
                       onClick={() => handleOpenBooking(property)}
@@ -577,6 +582,9 @@ export default function BerandaUser() {
                 <p className="text-[10px] font-bold text-gray-400">HARGA SEWA</p>
                 <p className="font-extrabold text-amber-700">
                   Rp {Number(selectedProperty.pricePerHour).toLocaleString("id-ID")} <span className="text-xs font-normal text-gray-500">/ jam</span>
+                </p>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  Deposit jaminan: Rp {Number(selectedProperty.deposit).toLocaleString("id-ID")}
                 </p>
               </div>
             </div>
