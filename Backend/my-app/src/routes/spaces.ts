@@ -14,7 +14,7 @@ const app = new Hono();
 
 // Mendefinisikan folder uploads dengan path absolut agar tidak menumpuk di tempat yang salah
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
-
+ 
 // Helper: Menghapus file fisik dari server
 async function deleteImageFiles(images: { imageUrl: string }[]) {
   for (const img of images) {
@@ -79,6 +79,7 @@ app.put("/:id", authMiddleware, adminOnly, async (c) => {
     status: body.status as "active" | "inactive",
     address: body.address as string,
     deposit: body.deposit as string,
+    pricePerHour: body.pricePerHour as string,
     updatedAt: new Date(),
   }).where(eq(spaces.id, id)).returning();
   return c.json(updated[0]);
