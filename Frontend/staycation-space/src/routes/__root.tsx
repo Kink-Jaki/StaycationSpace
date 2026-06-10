@@ -8,10 +8,14 @@ import {
 } from "lucide-react";
 
 const Navbar = () => {
+  const location = useLocation();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
+
+  const isLandingPage = location.pathname === "/";
 
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -58,7 +62,7 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-6 relative">
-              {isLoggedIn && (
+              {isLoggedIn && !isLandingPage && (
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition-all"
@@ -66,11 +70,13 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
                     <User size={16} className="text-black" />
                   </div>
-                  <span className="text-sm text-zinc-300 hidden sm:block">{username}</span>
+                  <span className="text-sm text-zinc-300 hidden sm:block">
+                    {username}
+                  </span>
                 </button>
               )}
 
-              {isLoggedIn && isMenuOpen && (
+              {isLoggedIn && !isLandingPage && isMenuOpen && (
                 <>
                   <div
                     className="fixed inset-0 z-40"
