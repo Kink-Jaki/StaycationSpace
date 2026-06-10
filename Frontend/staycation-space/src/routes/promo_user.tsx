@@ -4,7 +4,7 @@ import {
   ArrowLeft, Copy, CheckCircle2, AlertCircle, Calendar, Percent, DollarSign, Loader2
 } from 'lucide-react'
 
-const API_BASE_URL = "http://192.168.111.127:3000"
+const API_BASE_URL = "http://192.168.111.17:3000";
 
 interface Promo {
   id: number

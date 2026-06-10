@@ -7,7 +7,7 @@
     Tag, Loader2, X, CheckCircle2, Clock, AlertCircle,
   } from 'lucide-react'
 
-  const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.111.127:3000'
+  const BASE_URL = import.meta.env.VITE_API_URL ?? "http://192.168.111.17:3000";
     
   interface Promo {
     id: number

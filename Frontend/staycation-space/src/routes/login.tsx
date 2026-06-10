@@ -13,9 +13,10 @@ import {
   UserPlus,
   Lock,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 
-const API_BASE_URL = "http://192.168.111.127:3000";
+const API_BASE_URL = "http://192.168.111.17:3000";
 
 // Definisi tipe data untuk Notifikasi agar aman dari error TypeScript
 interface AppNotification {
@@ -239,6 +240,7 @@ export default function Home() {
   };
 
   return (
+    
     <div className="min-h-screen w-full bg-neutral-100/60 lg:bg-neutral-100 flex items-center justify-center p-0 md:p-6 lg:p-8 xl:p-12 antialiased font-sans">
       {/* Container Utama */}
       <div className="w-full max-w-[1180px] mx-auto bg-white md:rounded-2xl lg:rounded-3xl lg:shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2 min-h-screen md:min-h-[700px] lg:min-h-[680px]">
@@ -331,6 +333,14 @@ export default function Home() {
 
           {/* Card Utama */}
           <div className="w-full max-w-[380px] my-auto space-y-5">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/" })}
+              className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors mb-4">
+              <ArrowLeft className="w-4 h-4" />
+              Kembali ke Beranda
+            </button>
+
             {/* Header Form */}
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight font-serif mb-1">

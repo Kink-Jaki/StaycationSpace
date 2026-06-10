@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { redirect } from '@tanstack/react-router'
 
-let detectedApiUrl = 'http://192.168.111.127:3000'
+let detectedApiUrl = "http://192.168.111.17:3000";
  
 interface ReportSummary {
   totalBookings: number

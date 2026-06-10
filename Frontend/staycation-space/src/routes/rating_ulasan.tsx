@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import React, { useState, useEffect, useMemo } from 'react';
 import { Star, Edit, Trash2, User, MessageSquare, ArrowLeft } from 'lucide-react';
 
-const API_BASE_URL = "http://192.168.111.127:3000";
+const API_BASE_URL = "http://192.168.111.17:3000";
 
 type Review = {
   id: number;

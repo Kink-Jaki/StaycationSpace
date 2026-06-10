@@ -18,12 +18,13 @@ interface Space {
   status: string;
 }
 
-export const Route = createFileRoute('/beranda')({
-    component: BerandaUser,
+export const Route = createFileRoute('/')({
+    component: Landingpage,
   });
 
-export default function BerandaUser() {
+export default function Landingpage() {
   const navigate = useNavigate();
+
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -31,49 +32,49 @@ export default function BerandaUser() {
   const [promoLoading, setPromoLoading] = useState(false);
 
   const validatePromo = async (code: string) => {
-  if (!code.trim()) {
-    setPromoData(null);
-    return;
-  }
-
-  try {
-    setPromoLoading(true);
-
-    const res = await fetch(
-      `${API_BASE_URL}/promos/validate`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code }),
-      }
-    );
-
-    const text = await res.text();
-
-    let data: any;
+    if (!code.trim()) {
+      setPromoData(null);
+      return;
+    }
 
     try {
-      data = JSON.parse(text);
-    } catch {
-      data = { message: text };
-    }
+      setPromoLoading(true);
 
-    if (res.ok) {
-      setPromoData(data.promo);
-      setBookingError(null);
-    } else {
+      const res = await fetch(
+        `${API_BASE_URL}/promos/validate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ code }),
+        }
+      );
+
+      const text = await res.text();
+
+      let data: any;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
+
+      if (res.ok) {
+        setPromoData(data.promo);
+        setBookingError(null);
+      } else {
+        setPromoData(null);
+        setBookingError(data.message || "Promo tidak valid");
+      }
+    } catch (error) {
+      console.error(error);
       setPromoData(null);
-      setBookingError(data.message || "Promo tidak valid");
+    } finally {
+      setPromoLoading(false);
     }
-  } catch (error) {
-    console.error(error);
-    setPromoData(null);
-  } finally {
-    setPromoLoading(false);
-  }
-};
+  };
 
   // Definisi kategori disesuaikan dengan enum backend: ["studio", "villa", "hall", "other"]
   const categories = [
@@ -170,21 +171,6 @@ export default function BerandaUser() {
 
     return matchesCategory && matchesSearch;
   });
-
-  // Handler membuka modal pemesanan
-  const handleOpenBooking = (property: Space) => {
-    setSelectedProperty(property);
-    setBookingForm({
-      startTimeDate: new Date().toISOString().split('T')[0],
-      startTimeHour: '09:00',
-      duration: 1,
-      promoCode: '',
-      notes: ''
-    });
-    setBookingSuccess(false);
-    setBookingError(null);
-    setIsModalOpen(true);
-  };
 
   // Menghitung Estimasi Harga di Sisi Klien (termasuk promo)
   const calculatePrice = () => {
@@ -338,11 +324,11 @@ export default function BerandaUser() {
 
           {/* Quick Actions */}
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-             <button onClick={() => navigate({ to: "/booking_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
+             <button onClick={() => navigate({ to: "/login" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer">
                 <CalendarCheck size={18} className="text-[#F59E0B]" />
                 Booking Saya
              </button>
-             <button onClick={() => navigate({ to: "/promo_user" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all">
+             <button onClick={() => navigate({ to: "/login" })} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer">
                 <Ticket size={18} className="text-[#F59E0B]" />
                 Kupon Promo
              </button>
@@ -432,16 +418,16 @@ export default function BerandaUser() {
                     <div>
                       <p className="text-xs text-gray-400 font-bold mb-1">TARIF MULAI</p>
                       <p className="font-extrabold text-lg">
-                          Rp {Number(property.pricePerHour).toLocaleString("id-ID")}{" "}
-                          <span className="text-xs font-normal text-gray-500">/ jam</span>
-                        </p>
+                        Rp {Number(property.pricePerHour).toLocaleString("id-ID")}{" "}
+                        <span className="text-xs font-normal text-gray-500">/ jam</span>
+                      </p>
 
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          Deposit jaminan: Rp {Number(property.deposit).toLocaleString("id-ID")}
-                        </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Deposit jaminan: Rp {Number(property.deposit).toLocaleString("id-ID")}
+                      </p>
                     </div>
                     <button
-                      onClick={() => handleOpenBooking(property)}
+                      onClick={() => navigate({ to: "/login" })}
                       className="bg-[#F59E0B] hover:bg-[#D97706] text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       PESAN SEKARANG
